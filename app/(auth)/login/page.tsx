@@ -17,6 +17,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,14 +36,17 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
       if (!response.ok) {
-        throw new Error('Login failed');
+        const error = await response.json();
+        setError(error.message || 'Login failed');
+        throw new Error(error || 'Login failed');
       }
       const data = await response.json();
       if (data) {
         localStorage.setItem('token', data.AccessToken);
         router.push('/dashboard');
       }
-    } catch (error) {
+    } catch (error: Error | any) {
+      console.log(error);
     } finally {
       setLoading(false);
     }
@@ -159,6 +163,7 @@ export default function LoginPage() {
                       </button>
                     </div>
                   </div>
+                  {error && <p className='text-red-500 text-center'>{error}</p>}
                   <Button
                     type='submit'
                     disabled={loading}
