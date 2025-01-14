@@ -64,6 +64,13 @@ export default function AccountSettingsPage() {
 
   const personalInfoForm = useForm<PersonalInfoFormData>({
     resolver: zodResolver(personalInfoSchema),
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      bio: '',
+    },
   });
 
   const securityForm = useForm<SecurityFormData>({
