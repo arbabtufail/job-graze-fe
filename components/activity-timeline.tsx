@@ -22,7 +22,6 @@ const activityTypes = {
 };
 
 export function ActivityTimeline({ activities }: ActivityTimelineProps) {
-  console.log(activities);
   return (
     <Card>
       <CardHeader>
@@ -30,11 +29,11 @@ export function ActivityTimeline({ activities }: ActivityTimelineProps) {
       </CardHeader>
       <CardContent>
         <ul className='space-y-8'>
-          {activities.map((activity) => {
+          {activities.map((activity, index) => {
             const { icon: Icon, color } =
               activityTypes[activity.type as keyof typeof activityTypes];
             return (
-              <li key={activity.id} className='flex items-start space-x-4'>
+              <li key={index} className='flex items-start space-x-4'>
                 <div className={`${color} p-2 rounded-full`}>
                   <Icon className='h-5 w-5 text-white' />
                 </div>

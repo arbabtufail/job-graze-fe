@@ -73,14 +73,12 @@ export default function ActivityTrackerPage() {
             })),
         };
         const finalData = [
-          sanitizedData.added,
-          sanitizedData.updated,
-          sanitizedData.deleted,
-        ]
-          .flat()
-          .sort(
-            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-          );
+          ...sanitizedData.added,
+          ...sanitizedData.updated,
+          ...sanitizedData.deleted,
+        ].sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
         setData(sanitizedData);
         setFullData(finalData);
         setActivities(finalData);
@@ -109,6 +107,7 @@ export default function ActivityTrackerPage() {
       setActivities(fullData);
     }
   };
+
   const handleDateChange = (date: Date) => {
     setDate(date);
   };
