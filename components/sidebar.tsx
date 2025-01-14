@@ -1,41 +1,65 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { LayoutDashboard, Users, Activity, Upload, Settings, Menu, X, LogOut } from 'lucide-react'
-import { usePathname } from 'next/navigation'
-import { Button } from "@/components/ui/button"
-import { logout } from "@/app/actions/auth-actions"
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import {
+  LayoutDashboard,
+  Users,
+  Activity,
+  Upload,
+  Settings,
+  Menu,
+  X,
+  LogOut,
+} from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { logout } from '@/app/actions/auth-actions';
+import { useRouter } from 'next/navigation';
 
 export function Sidebar() {
-  const pathname = usePathname()
-  const [isOpen, setIsOpen] = useState(false)
-  const router = useRouter()
+  const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
+  const finalPath = '/' + pathname.split('/')[1];
 
   // Close sidebar when route changes
   useEffect(() => {
-    setIsOpen(false)
-  }, [pathname])
+    setIsOpen(false);
+  }, [pathname]);
 
   // Prevent background scroll when sidebar is open
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden'
+      document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = 'unset'
+      document.body.style.overflow = 'unset';
     }
     return () => {
-      document.body.style.overflow = 'unset'
-    }
-  }, [isOpen])
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
 
   const handleLogout = async () => {
-    const result = await logout()
-    if (result.success) {
-      router.push('/login')
-    }
-  }
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch('/api/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Logout failed');
+      }
+      const result = await response.json();
+      if (result) {
+        localStorage.removeItem('token');
+        router.push('/login');
+      }
+    } catch (error) {}
+  };
 
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
@@ -44,30 +68,30 @@ export function Sidebar() {
     { icon: Upload, label: 'Bulk Upload', href: '/bulk-upload' },
     { icon: Settings, label: 'Account Settings', href: '/account-settings' },
     { icon: LogOut, label: 'Logout', onClick: handleLogout },
-  ]
+  ];
 
   return (
     <>
       {/* Overlay */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 md:hidden" 
+        <div
+          className='fixed inset-0 bg-black/50 z-40 md:hidden'
           onClick={() => setIsOpen(false)}
         />
       )}
 
       {/* Mobile Menu Button */}
       <Button
-        className="fixed top-4 left-4 z-50 md:hidden"
+        className='fixed top-4 left-4 z-50 md:hidden'
         onClick={() => setIsOpen(!isOpen)}
-        size="icon"
-        variant="outline"
+        size='icon'
+        variant='outline'
       >
-        {isOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+        {isOpen ? <X className='h-4 w-4' /> : <Menu className='h-4 w-4' />}
       </Button>
 
       {/* Sidebar */}
-      <div 
+      <div
         className={`
           fixed left-0 top-0 h-full w-64 bg-[#004E64] text-white p-4
           transform transition-transform duration-200 ease-in-out z-50
@@ -75,15 +99,15 @@ export function Sidebar() {
           md:translate-x-0 md:z-30
         `}
       >
-        <div className="mb-8 mt-12 md:mt-0">
+        <div className='mb-8 mt-12 md:mt-0'>
           <img
-            src="https://fcoa.org/images/JobGraze_vert_2023.png"
-            alt="JobGraze Logo"
-            className="h-16 w-auto"
+            src='https://fcoa.org/images/JobGraze_vert_2023.png'
+            alt='JobGraze Logo'
+            className='h-16 w-auto'
           />
         </div>
-        
-        <nav className="space-y-1">
+
+        <nav className='space-y-1'>
           {menuItems.map(({ icon: Icon, label, href, onClick }) => (
             <div key={label}>
               {onClick ? (
@@ -94,7 +118,7 @@ export function Sidebar() {
                   `}
                   onClick={onClick}
                 >
-                  <Icon className="h-5 w-5" />
+                  <Icon className='h-5 w-5' />
                   <span>{label}</span>
                 </button>
               ) : (
@@ -102,11 +126,15 @@ export function Sidebar() {
                   href={href || '#'}
                   className={`
                     flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors
-                    ${pathname === href ? 'bg-[#F2994A] text-white' : 'text-white hover:bg-[#F2994A]'}
+                    ${
+                      finalPath === href
+                        ? 'bg-[#F2994A] text-white'
+                        : 'text-white hover:bg-[#F2994A]'
+                    }
                   `}
                   onClick={() => setIsOpen(false)}
                 >
-                  <Icon className="h-5 w-5" />
+                  <Icon className='h-5 w-5' />
                   <span>{label}</span>
                 </Link>
               )}
@@ -115,6 +143,5 @@ export function Sidebar() {
         </nav>
       </div>
     </>
-  )
+  );
 }
-
