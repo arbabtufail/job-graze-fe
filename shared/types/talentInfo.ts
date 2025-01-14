@@ -7,6 +7,6 @@ export type talentInfo = {
   createdAt: string;
   updatedAt: string;
   specialties: string[];
-  status?: 'Active' | 'In Progress' | 'On Hold' | 'Inactive';
+  status?: 'active' | 'inProgress' | 'onHold' | 'inActive';
   address1: string;
 };

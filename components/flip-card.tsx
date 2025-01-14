@@ -15,10 +15,10 @@ interface FlipCardProps {
 }
 
 const statusConfig = {
-  Active: { color: 'bg-green-100 text-green-800', label: 'Active' },
-  'In Progress': { color: 'bg-blue-100 text-blue-800', label: 'In Progress' },
-  'On Hold': { color: 'bg-yellow-100 text-yellow-800', label: 'On Hold' },
-  Inactive: { color: 'bg-gray-100 text-gray-800', label: 'Inactive' },
+  active: { color: 'bg-green-100 text-green-800', label: 'Active' },
+  inProgress: { color: 'bg-blue-100 text-blue-800', label: 'In Progress' },
+  onHold: { color: 'bg-yellow-100 text-yellow-800', label: 'On Hold' },
+  inActive: { color: 'bg-gray-100 text-gray-800', label: 'Inactive' },
 };
 
 export function FlipCard({ talent, onDelete }: FlipCardProps) {
@@ -53,9 +53,9 @@ export function FlipCard({ talent, onDelete }: FlipCardProps) {
                   {talent.firstName + ' ' + talent.lastName}
                 </h3>
                 <Badge
-                  className={statusConfig[talent.status || 'Active'].color}
+                  className={statusConfig[talent.status || 'active'].color}
                 >
-                  {statusConfig[talent.status || 'Active'].label}
+                  {statusConfig[talent.status || 'active'].label}
                 </Badge>
               </div>
               <p className='text-xs sm:text-sm text-muted-foreground mb-2'>
