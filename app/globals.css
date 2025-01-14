@@ -1,0 +1,206 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: 201 100% 36%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 169 100% 36%;
+  --secondary-foreground: 0 0% 100%;
+  --background: 204 20% 94%;
+  --foreground: 201 100% 12%;
+  --muted: 201 20% 88%;
+  --muted-foreground: 201 20% 40%;
+  --accent: 34 100% 50%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 201 20% 80%;
+  --input: 201 20% 80%;
+  --ring: 201 100% 36%;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --primary: 201 100% 36%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 169 100% 36%;
+  --secondary-foreground: 0 0% 100%;
+  --background: 201 50% 10%;
+  --foreground: 204 20% 94%;
+  --muted: 201 50% 20%;
+  --muted-foreground: 201 20% 60%;
+  --accent: 34 100% 50%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 201 50% 20%;
+  --input: 201 50% 20%;
+  --ring: 201 100% 36%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+.parallax-container {
+  perspective: 1px;
+  height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.parallax-layer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.parallax-layer-back {
+  transform: translateZ(-1px) scale(2);
+}
+
+.parallax-layer-base {
+  transform: translateZ(0);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.flip-card {
+  perspective: 1000px;
+  width: 100%;
+  height: 300px;
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.flip-card.flipped .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front,
+.flip-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.flip-card-front {
+  background-color: white;
+  color: black;
+}
+
+.flip-card-back {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  transform: rotateY(180deg);
+}
+
+
+.tile-content {
+  transition: transform 0.3s ease-in-out;
+}
+
+
+/* Audit Tile Styles */
+.audit-tile {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.audit-tile:hover {
+  transform: translateY(-5px) scale(1.03);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.audit-tile:hover .tile-icon {
+  transform: scale(1.1);
+}
+
+.audit-tile:hover .tile-chevron {
+  opacity: 1;
+  transform: translateX(5px);
+}
+
+.tile-icon, .tile-chevron {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.tile-chevron {
+  opacity: 0.5;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Form styles */
+.form-input {
+  @apply w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600;
+}
+
+.form-select {
+  @apply w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600;
+}
+
+.form-checkbox {
+  @apply rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-600 focus:ring focus:ring-blue-600 focus:ring-offset-0;
+}
+
+.form-radio {
+  @apply rounded-full border-gray-300 text-blue-600 shadow-sm focus:border-blue-600 focus:ring focus:ring-blue-600 focus:ring-offset-0;
+}
+
+.form-textarea {
+  @apply w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600;
+}
+
+.form-file-upload {
+  @apply block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100;
+}
+
+/* Animation styles */
+.form-appear {
+  animation: formAppear 0.3s ease-out;
+}
+
+@keyframes formAppear {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
