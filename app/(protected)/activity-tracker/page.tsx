@@ -95,8 +95,8 @@ export default function ActivityTrackerPage() {
         setIsLoading(false);
       }
     };
-
     fetchActivityData();
+    setSelectedFilter('all');
   }, [date]);
 
   const handleFilterChange = (
