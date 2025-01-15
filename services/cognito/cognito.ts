@@ -35,7 +35,19 @@ const cognitoClientConfig: CognitoIdentityProviderClientConfig = {
 
 const cognitoClient = new CognitoIdentityProviderClient(cognitoClientConfig);
 
-const userPoolId = process.env.NEXT_PUBLIC_USER_POOL_ID;
+export const validateTokenExpiry = async (token: string): Promise<boolean> => {
+  try {
+    const params: GetUserCommandInput = {
+      AccessToken: token,
+    };
+    const command = new GetUserCommand(params);
+    await cognitoClient.send(command);
+
+    return true;
+  } catch (error: any) {
+    return false
+  }
+};
 
 export const loginUser = async (email: string, password: string) => {
   const params: InitiateAuthCommandInput = {

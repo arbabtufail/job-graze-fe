@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,6 +9,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Users, Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { validateTokenExpiry } from '@/services/cognito/cognito';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,6 +19,25 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [validatingToken, setValidatingToken] = useState<boolean>(true)
+
+  useEffect(() => {
+    const validateUserToken = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        const isValid = await validateTokenExpiry(token);
+        if (isValid) {
+          router.replace('/dashboard');
+        } else {
+          localStorage.removeItem('token');
+        }
+      }
+      setValidatingToken(false)
+    };
+
+    validateUserToken();
+  }, []);
+
 
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,8 +72,15 @@ export default function LoginPage() {
     }
   };
 
+  if (validatingToken) {
+    return (<div className='flex justify-center items-center min-h-screen'>
+      <AlertCircle className='h-5 w-5 text-[#F2994A]' />
+      <p className='text-[#4D4D4D] ml-4'>Loading...</p>
+    </div>)
+  }
+
   return (
-    <div className='min-h-screen bg-[#004D4D] flex items-center justify-center p-4'>
+    (<div className='min-h-screen bg-[#004D4D] flex items-center justify-center p-4'>
       <div className='bg-white rounded-2xl shadow-xl overflow-hidden w-full max-w-4xl flex flex-col md:flex-row'>
         <div className='md:w-1/2 bg-[#E6F4F1] p-12 flex flex-col justify-between'>
           <div>
@@ -197,6 +224,6 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>))
+
 }

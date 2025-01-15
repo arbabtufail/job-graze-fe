@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
 import { Sidebar } from '@/components/sidebar';
 import { DashboardHeader } from '@/components/dashboard-header';
 import { FlipCard } from '@/components/flip-card';
@@ -47,8 +46,8 @@ export default function TalentProfilesPage() {
       try {
         const response = await getAllTalentProfiles();
         if (response) {
-          setTalents(response.data);
-          setDisplayedTalents(response.data);
+          setTalents(response.data.data);
+          setDisplayedTalents(response.data.data);
         }
       } catch (error) {
         console.error('Error fetching talents:', error);

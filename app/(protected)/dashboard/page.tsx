@@ -45,7 +45,7 @@ type MonthlyTalentAcquisition = {
 };
 
 export default function DashboardPage() {
-  const [dashboardData, setDashboardData] = useState(null);
+  const [dashboardData, setDashboardData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [recentUpdates, setRecentUpdates] = useState<RecentUpdates[]>([]);
   const [monthlyAcqusition, setMonthlyAcqusition] = useState<
@@ -76,13 +76,13 @@ export default function DashboardPage() {
           fetch('/api/dashboard'),
         ]);
         if (recentUpdates.status === 200) {
-          setRecentUpdates(recentUpdates.data);
+          setRecentUpdates(recentUpdates.data.data);
         }
         if (monthlyTalentAcquisition.status === 200) {
-          setMonthlyAcqusition(monthlyTalentAcquisition.data);
+          setMonthlyAcqusition(monthlyTalentAcquisition.data.data);
         }
         if (profileCount.status === 200) {
-          setProfileCount(profileCount.data);
+          setProfileCount(profileCount.data.data);
         }
         if (dashboard.status === 200) {
           setDashboardData(await dashboard.json());
@@ -195,8 +195,8 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <ul className='space-y-4'>
-                  {recentUpdates.map((activity) => (
-                    <li key={activity.id} className='flex items-center'>
+                  {recentUpdates.map((activity,index) => (
+                    <li key={index} className='flex items-center'>
                       {activity.type === 'added' && (
                         <UserPlus className='h-5 w-5 mr-3 text-[#F2994A]' />
                       )}

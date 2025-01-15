@@ -36,7 +36,7 @@ export default function EditTalentPage() {
       try {
         const response = await getTalentProfileById(params.id as string);
         if (response) {
-          setTalent(response.data);
+          setTalent(response.data.data);
         }
       } catch (error) {}
     };
@@ -95,7 +95,7 @@ export default function EditTalentPage() {
         selectedSection as keyof typeof getFunction
       ](params.id as string, data);
       if (response) {
-        setTalent(response.data);
+        setTalent(response.data.data);
       }
     } catch (error) {
     } finally {
