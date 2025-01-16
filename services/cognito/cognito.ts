@@ -9,8 +9,6 @@ import {
   ConfirmSignUpCommand,
   ResendConfirmationCodeCommand,
   ResendConfirmationCodeCommandInput,
-  ChangePasswordCommand,
-  ChangePasswordCommandInput,
   ForgotPasswordCommand,
   ForgotPasswordCommandInput,
   ConfirmForgotPasswordCommand,

@@ -82,6 +82,12 @@ export const getMonthlyTalentAcquisitionCount = (): Promise<
   return axios.get(`/talent-profiles/monthlyTalentAcquisitionCount`);
 };
 
+export const getTalentSpecializations = (): Promise<
+  AxiosResponse<any>
+> => {
+  return axios.get(`/talent-profiles/talentSpecializations`);
+};
+
 export const getRecentActivity = (
   startDate?: string
 ): Promise<AxiosResponse<any>> => {
