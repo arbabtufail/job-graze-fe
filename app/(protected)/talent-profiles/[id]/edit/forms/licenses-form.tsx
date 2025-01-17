@@ -1,6 +1,6 @@
 'use client';
 
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { motion } from 'framer-motion';
@@ -26,17 +26,24 @@ import { FormHeader } from '@/components/form-header';
 import { ProfessionalLicense } from '@/shared/types/professionalLicense';
 
 const licensesSchema = z.object({
-  licenseType: z.string().min(1, 'License type is required'),
-  licenseState: z.string().min(1, 'License state is required'),
-  licenseCountry: z.string().min(1, 'License country is required'),
-  licenseNumber: z.string().min(1, 'License number is required'),
-  licenseEffectiveDate: z.string().min(1, 'License effective date is required'),
-  licenseExpirationDate: z
-    .string()
-    .min(1, 'License expiration date is required'),
+  license: z.array(
+    z.object({
+      licenseType: z.string().min(1, 'License type is required'),
+      licenseState: z.string().min(1, 'License state is required'),
+      licenseCountry: z.string().min(1, 'License country is required'),
+      licenseNumber: z.string().min(1, 'License number is required'),
+      licenseEffectiveDate: z
+        .string()
+        .min(1, 'License effective date is required'),
+      licenseExpirationDate: z
+        .string()
+        .min(1, 'License expiration date is required'),
+    })
+  ),
   nclexRn: z.string().min(1, 'NCLEX-RN status is required'),
   euRn: z.string().min(1, 'EU-RN status is required'),
-  languageExam: z.string().min(1, 'Language exam is required'),
+  englishLanguageExam: z.string().min(1, 'English Language exam is required'),
+  spanishLanguageExam: z.string().min(1, 'Spanish Language exam is required'),
 });
 
 type LicensesFormData = z.infer<typeof licensesSchema>;
@@ -61,28 +68,45 @@ export function LicensesForm({
   } = useForm<LicensesFormData>({
     resolver: zodResolver(licensesSchema),
     defaultValues: {
-      licenseType: data.licenseType || '',
-      licenseState: data.licenseState || '',
-      licenseCountry: data.licenseCountry || '',
-      licenseNumber: data.licenseNumber || '',
-      licenseEffectiveDate:
-        new Date(data.licenseEffectiveDate).toISOString().split('T')[0] || '',
-      licenseExpirationDate:
-        new Date(data.licenseExpirationDate).toISOString().split('T')[0] || '',
+      license: [
+        {
+          licenseType: data.licenseType || '',
+          licenseState: data.licenseState || '',
+          licenseCountry: data.licenseCountry || '',
+          licenseNumber: data.licenseNumber || '',
+          licenseEffectiveDate:
+            new Date(data.licenseEffectiveDate).toISOString().split('T')[0] ||
+            '',
+          licenseExpirationDate:
+            new Date(data.licenseExpirationDate).toISOString().split('T')[0] ||
+            '',
+        },
+      ],
       nclexRn: data.nclexRn || '',
       euRn: data.euRn || '',
-      languageExam: data.languageExam || '',
+      englishLanguageExam: 'no',
+      spanishLanguageExam: 'yes',
     },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'license',
   });
 
   const onSubmit = (formData: LicensesFormData) => {
     onUpdate({
       ...formData,
+      licenseType: formData.license[0].licenseType,
+      licenseState: formData.license[0].licenseState,
+      licenseCountry: formData.license[0].licenseCountry,
+      licenseNumber: formData.license[0].licenseNumber,
+
       licenseEffectiveDate: new Date(
-        formData.licenseEffectiveDate
+        formData.license[0].licenseEffectiveDate
       ).toISOString(),
       licenseExpirationDate: new Date(
-        formData.licenseExpirationDate
+        formData.license[0].licenseExpirationDate
       ).toISOString(),
       licenseIssuedBy: data.licenseIssuedBy,
     });
@@ -102,132 +126,172 @@ export function LicensesForm({
         title='Licenses & Certifications'
         color='text-orange-600'
       />
+      <div className='space-y-4'>
+        <Label className='text-xl'>License</Label>
+        {fields.map((field: any, index: number) => (
+          <div key={field.id} className='space-y-4 p-4 border rounded-md '>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+              <div className='space-y-2'>
+                <Label htmlFor='licenseType'>License Type *</Label>
+                <Controller
+                  name={`license.${index}.licenseType`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className='relative'>
+                      <Award className='absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-600' />
+                      <Input id='licenseType' className='pl-10' {...field} />
+                    </div>
+                  )}
+                />
+                {errors?.license?.[index]?.licenseType && (
+                  <p className='text-red-500 text-sm'>
+                    {errors?.license[index]?.licenseType.message}
+                  </p>
+                )}
+              </div>
 
+              <div className='space-y-2'>
+                <Label htmlFor='licenseState'>License State *</Label>
+                <Controller
+                  name={`license.${index}.licenseState`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className='relative'>
+                      <MapPin className='absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-600' />
+                      <Input id='licenseState' className='pl-10' {...field} />
+                    </div>
+                  )}
+                />
+                {errors?.license?.[index]?.licenseState && (
+                  <p className='text-red-500 text-sm'>
+                    {errors?.license[index]?.licenseState.message}
+                  </p>
+                )}
+              </div>
+
+              <div className='space-y-2'>
+                <Label htmlFor='licenseCountry'>License Country *</Label>
+                <Controller
+                  name={`license.${index}.licenseCountry`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className='relative'>
+                      <Globe className='absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-600' />
+                      <Input id='licenseCountry' className='pl-10' {...field} />
+                    </div>
+                  )}
+                />
+                {errors?.license?.[index]?.licenseCountry && (
+                  <p className='text-red-500 text-sm'>
+                    {errors?.license[index]?.licenseCountry.message}
+                  </p>
+                )}
+              </div>
+
+              <div className='space-y-2'>
+                <Label htmlFor='licenseNumber'>License Number *</Label>
+                <Controller
+                  name={`license.${index}.licenseNumber`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className='relative'>
+                      <FileText className='absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-600' />
+                      <Input id='licenseNumber' className='pl-10' {...field} />
+                    </div>
+                  )}
+                />
+                {errors?.license?.[index]?.licenseNumber && (
+                  <p className='text-red-500 text-sm'>
+                    {errors?.license[index]?.licenseNumber.message}
+                  </p>
+                )}
+              </div>
+
+              <div className='space-y-2'>
+                <Label htmlFor='licenseEffectiveDate'>
+                  License Effective Date *
+                </Label>
+                <Controller
+                  name={`license.${index}.licenseEffectiveDate`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className='relative'>
+                      <Calendar className='absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-600' />
+                      <Input
+                        type='date'
+                        id='licenseEffectiveDate'
+                        className='pl-10'
+                        {...field}
+                      />
+                    </div>
+                  )}
+                />
+                {errors?.license?.[index]?.licenseEffectiveDate && (
+                  <p className='text-red-500 text-sm'>
+                    {errors?.license[index]?.licenseEffectiveDate.message}
+                  </p>
+                )}
+              </div>
+
+              <div className='space-y-2'>
+                <Label htmlFor='licenseExpirationDate'>
+                  License Expiration Date *
+                </Label>
+                <Controller
+                  name={`license.${index}.licenseExpirationDate`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className='relative'>
+                      <Calendar className='absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-600' />
+                      <Input
+                        type='date'
+                        id='licenseExpirationDate'
+                        className='pl-10'
+                        {...field}
+                      />
+                    </div>
+                  )}
+                />
+                {errors?.license?.[index]?.licenseExpirationDate && (
+                  <p className='text-red-500 text-sm'>
+                    {errors?.license[index]?.licenseExpirationDate.message}
+                  </p>
+                )}
+              </div>
+            </div>
+            {!(index == 0) && (
+              <Button
+                type='button'
+                variant='outline'
+                onClick={() => remove(index)}
+                className='bg-red-500 text-white'
+              >
+                Remove
+              </Button>
+            )}
+          </div>
+        ))}
+        {fields.length < 6 && (
+          <Button
+            type='button'
+            variant='outline'
+            onClick={() =>
+              fields.length < 6 &&
+              append({
+                licenseType: '',
+                licenseState: '',
+                licenseCountry: '',
+                licenseNumber: '',
+                licenseEffectiveDate: '',
+                licenseExpirationDate: '',
+              })
+            }
+          >
+            Add License
+          </Button>
+        )}
+      </div>
       <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-        <div className='space-y-2'>
-          <Label htmlFor='licenseType'>License Type *</Label>
-          <Controller
-            name='licenseType'
-            control={control}
-            render={({ field }) => (
-              <div className='relative'>
-                <Award className='absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-600' />
-                <Input id='licenseType' className='pl-10' {...field} />
-              </div>
-            )}
-          />
-          {errors.licenseType && (
-            <p className='text-red-500 text-sm'>{errors.licenseType.message}</p>
-          )}
-        </div>
-
-        <div className='space-y-2'>
-          <Label htmlFor='licenseState'>License State *</Label>
-          <Controller
-            name='licenseState'
-            control={control}
-            render={({ field }) => (
-              <div className='relative'>
-                <MapPin className='absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-600' />
-                <Input id='licenseState' className='pl-10' {...field} />
-              </div>
-            )}
-          />
-          {errors.licenseState && (
-            <p className='text-red-500 text-sm'>
-              {errors.licenseState.message}
-            </p>
-          )}
-        </div>
-
-        <div className='space-y-2'>
-          <Label htmlFor='licenseCountry'>License Country *</Label>
-          <Controller
-            name='licenseCountry'
-            control={control}
-            render={({ field }) => (
-              <div className='relative'>
-                <Globe className='absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-600' />
-                <Input id='licenseCountry' className='pl-10' {...field} />
-              </div>
-            )}
-          />
-          {errors.licenseCountry && (
-            <p className='text-red-500 text-sm'>
-              {errors.licenseCountry.message}
-            </p>
-          )}
-        </div>
-
-        <div className='space-y-2'>
-          <Label htmlFor='licenseNumber'>License Number *</Label>
-          <Controller
-            name='licenseNumber'
-            control={control}
-            render={({ field }) => (
-              <div className='relative'>
-                <FileText className='absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-600' />
-                <Input id='licenseNumber' className='pl-10' {...field} />
-              </div>
-            )}
-          />
-          {errors.licenseNumber && (
-            <p className='text-red-500 text-sm'>
-              {errors.licenseNumber.message}
-            </p>
-          )}
-        </div>
-
-        <div className='space-y-2'>
-          <Label htmlFor='licenseEffectiveDate'>License Effective Date *</Label>
-          <Controller
-            name='licenseEffectiveDate'
-            control={control}
-            render={({ field }) => (
-              <div className='relative'>
-                <Calendar className='absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-600' />
-                <Input
-                  type='date'
-                  id='licenseEffectiveDate'
-                  className='pl-10'
-                  {...field}
-                />
-              </div>
-            )}
-          />
-          {errors.licenseEffectiveDate && (
-            <p className='text-red-500 text-sm'>
-              {errors.licenseEffectiveDate.message}
-            </p>
-          )}
-        </div>
-
-        <div className='space-y-2'>
-          <Label htmlFor='licenseExpirationDate'>
-            License Expiration Date *
-          </Label>
-          <Controller
-            name='licenseExpirationDate'
-            control={control}
-            render={({ field }) => (
-              <div className='relative'>
-                <Calendar className='absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-600' />
-                <Input
-                  type='date'
-                  id='licenseExpirationDate'
-                  className='pl-10'
-                  {...field}
-                />
-              </div>
-            )}
-          />
-          {errors.licenseExpirationDate && (
-            <p className='text-red-500 text-sm'>
-              {errors.licenseExpirationDate.message}
-            </p>
-          )}
-        </div>
-
         <div className='space-y-2'>
           <Label htmlFor='nclexRn'>NCLEX-RN Status *</Label>
           <Controller
@@ -243,7 +307,7 @@ export function LicensesForm({
                   <SelectTrigger id='nclexRn' className='pl-10'>
                     <SelectValue placeholder='Select status' />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className='bg-white'>
                     <SelectItem value='Preparing'>Preparing</SelectItem>
                     <SelectItem value='Passed'>Passed</SelectItem>
                     <SelectItem value='Scheduled'>Scheduled</SelectItem>
@@ -273,7 +337,7 @@ export function LicensesForm({
                   <SelectTrigger id='euRn' className='pl-10'>
                     <SelectValue placeholder='Select status' />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className='bg-white'>
                     <SelectItem value='Preparing'>Preparing</SelectItem>
                     <SelectItem value='Passed'>Passed</SelectItem>
                     <SelectItem value='Scheduled'>Scheduled</SelectItem>
@@ -289,9 +353,38 @@ export function LicensesForm({
         </div>
 
         <div className='space-y-2'>
-          <Label htmlFor='languageExam'>Language Exam *</Label>
+          <Label htmlFor='englishLanguageExam'>English Language Exam *</Label>
           <Controller
-            name='languageExam'
+            name='englishLanguageExam'
+            control={control}
+            render={({ field }) => (
+              <div className='relative'>
+                <Globe className='absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-600' />
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <SelectTrigger id='englishLanguageExam' className='pl-10'>
+                    <SelectValue placeholder='Select option' />
+                  </SelectTrigger>
+                  <SelectContent className='bg-white'>
+                    <SelectItem value='yes'>Yes</SelectItem>
+                    <SelectItem value='no'>No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          />
+          {errors.englishLanguageExam && (
+            <p className='text-red-500 text-sm'>
+              {errors.englishLanguageExam.message}
+            </p>
+          )}
+        </div>
+        <div className='space-y-2'>
+          <Label htmlFor='spanishLanguageExam'>Spanish Language Exam *</Label>
+          <Controller
+            name='spanishLanguageExam'
             control={control}
             render={({ field }) => (
               <div className='relative'>
@@ -301,22 +394,19 @@ export function LicensesForm({
                   defaultValue={field.value}
                 >
                   <SelectTrigger id='languageExam' className='pl-10'>
-                    <SelectValue placeholder='Select language' />
+                    <SelectValue placeholder='Select option' />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value='English'>English</SelectItem>
-                    <SelectItem value='Spanish'>Spanish</SelectItem>
-                    <SelectItem value='French'>French</SelectItem>
-                    <SelectItem value='German'>German</SelectItem>
-                    <SelectItem value='Other'>Other</SelectItem>
+                  <SelectContent className='bg-white'>
+                    <SelectItem value='yes'>Yes</SelectItem>
+                    <SelectItem value='no'>No</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             )}
           />
-          {errors.languageExam && (
+          {errors.spanishLanguageExam && (
             <p className='text-red-500 text-sm'>
-              {errors.languageExam.message}
+              {errors.spanishLanguageExam.message}
             </p>
           )}
         </div>

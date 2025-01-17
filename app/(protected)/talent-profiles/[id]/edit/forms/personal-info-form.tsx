@@ -22,7 +22,7 @@ import { FileUpload } from '@/components/file-upload';
 import { PersonalInfo } from '@/shared/types/personalInformation';
 
 const personalInfoSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
+  title: z.string().optional(),
   firstName: z
     .string()
     .min(1, 'First name is required')
@@ -118,7 +118,7 @@ export function PersonalInfoForm({
 
       <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
         <div className='space-y-2'>
-          <Label htmlFor='title'>Title *</Label>
+          <Label htmlFor='title'>Title</Label>
           <Controller
             name='title'
             control={control}
@@ -127,7 +127,7 @@ export function PersonalInfoForm({
                 <SelectTrigger id='title'>
                   <SelectValue placeholder='Select title' />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className='bg-white'>
                   <SelectItem value='Mr.'>Mr.</SelectItem>
                   <SelectItem value='Mrs.'>Mrs.</SelectItem>
                   <SelectItem value='Miss'>Miss</SelectItem>

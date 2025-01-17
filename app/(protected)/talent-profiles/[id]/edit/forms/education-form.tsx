@@ -13,18 +13,22 @@ import { FormHeader } from '@/components/form-header';
 import { EducationAndExperience } from '@/shared/types/educationAndExperience';
 
 const educationSchema = z.object({
-  degree: z
-    .string()
-    .min(1, 'Education degree is required')
-    .max(254, 'Education degree must be 254 characters or less'),
-  year: z
-    .string()
-    .min(4, 'Graduation year must be 4 digits')
-    .max(4, 'Graduation year must be 4 digits'),
-  school: z
-    .string()
-    .min(1, 'School/University name is required')
-    .max(254, 'School/University name must be 254 characters or less'),
+  educationDegree: z.array(
+    z.object({
+      degree: z
+        .string()
+        .min(1, 'Education degree is required')
+        .max(254, 'Education degree must be 254 characters or less'),
+      year: z
+        .string()
+        .min(4, 'Graduation year must be 4 digits')
+        .max(4, 'Graduation year must be 4 digits'),
+      school: z
+        .string()
+        .min(1, 'School/University name is required')
+        .max(254, 'School/University name must be 254 characters or less'),
+    })
+  ),
   jobExperiences: z
     .array(
       z
@@ -35,13 +39,10 @@ const educationSchema = z.object({
             .max(254, 'Job title must be 254 characters or less'),
           rolesAndResponsibilities: z
             .string()
-            .min(1, 'Roles & responsibilities are required')
-            .max(
-              254,
-              'Roles & responsibilities must be 254 characters or less'
-            ),
+            .max(254, 'Roles & responsibilities must be 254 characters or less')
+            .optional(),
           startDate: z.string().min(1, 'Start date is required'),
-          endDate: z.string().optional(),
+          endDate: z.string().min(1, 'End date is required'),
         })
         .refine(
           (data) =>
@@ -53,7 +54,14 @@ const educationSchema = z.object({
         )
     )
     .min(1, 'At least one job experience is required'),
-  languages: z.string().min(1, 'Languages spoken is required'),
+  languages: z
+    .string()
+    .min(1, 'Languages spoken is required')
+    .refine(
+      (value) =>
+        value.split(',').filter((lang) => lang.trim() !== '').length <= 4,
+      { message: 'You can specify a maximum of 4 languages' }
+    ),
 });
 
 type EducationFormData = z.infer<typeof educationSchema>;
@@ -78,9 +86,14 @@ export function EducationForm({
   } = useForm<EducationFormData>({
     resolver: zodResolver(educationSchema),
     defaultValues: {
-      degree: data.degree || '',
-      year: data.year || '',
-      school: data.school || '',
+      educationDegree: [
+        {
+          degree: data.degree || '',
+          year: data.year || '',
+          school: data.school || '',
+        },
+      ],
+
       jobExperiences:
         data?.jobExperiences?.length > 0
           ? data.jobExperiences.map((jobExperience) => ({
@@ -108,11 +121,21 @@ export function EducationForm({
     control,
     name: 'jobExperiences',
   });
+
+  const {
+    fields: educationFields,
+    append: educationAppend,
+    remove: educationRemove,
+  } = useFieldArray({
+    control,
+    name: 'educationDegree',
+  });
+
   const onSubmit = (formData: EducationFormData) => {
     onUpdate({
-      degree: formData.degree,
-      year: formData.year,
-      school: formData.school,
+      degree: formData.educationDegree[0].degree,
+      year: formData.educationDegree[0].year,
+      school: formData.educationDegree[0].school,
       jobExperiences: formData.jobExperiences.map((jobExperience) => ({
         ...jobExperience,
         startDate: new Date(jobExperience.startDate).toISOString(),
@@ -138,62 +161,113 @@ export function EducationForm({
         title='Education & Experience'
         color='text-emerald-600'
       />
-
-      <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-        <div className='space-y-2'>
-          <Label htmlFor='degree'>Education Degree *</Label>
-          <Controller
-            name='degree'
-            control={control}
-            render={({ field }) => (
-              <div className='relative'>
-                <GraduationCap className='absolute left-3 top-1/2 transform -translate-y-1/2 text-emerald-600' />
-                <Input id='degree' className='pl-10' {...field} />
-              </div>
-            )}
-          />
-          {errors.degree && (
-            <p className='text-red-500 text-sm'>{errors.degree.message}</p>
-          )}
-        </div>
-
-        <div className='space-y-2'>
-          <Label htmlFor='graduationYear'>Graduation Year *</Label>
-          <Controller
-            name='year'
-            control={control}
-            render={({ field }) => (
-              <div className='relative'>
-                <GraduationCap className='absolute left-3 top-1/2 transform -translate-y-1/2 text-emerald-600' />
-                <Input id='year' className='pl-10' {...field} />
-              </div>
-            )}
-          />
-          {errors.year && (
-            <p className='text-red-500 text-sm'>{errors.year.message}</p>
-          )}
-        </div>
-
-        <div className='space-y-2 md:col-span-2'>
-          <Label htmlFor='school'>School/University Name *</Label>
-          <Controller
-            name='school'
-            control={control}
-            render={({ field }) => (
-              <div className='relative'>
-                <GraduationCap className='absolute left-3 top-1/2 transform -translate-y-1/2 text-emerald-600' />
-                <Input id='school' className='pl-10' {...field} />
-              </div>
-            )}
-          />
-          {errors.school && (
-            <p className='text-red-500 text-sm'>{errors.school.message}</p>
-          )}
-        </div>
-      </div>
-
       <div className='space-y-4'>
-        <Label>Job Experience</Label>
+        <Label className='text-xl'>Education</Label>
+        {educationFields?.map((field: any, index: number) => (
+          <div key={field.id} className='space-y-4 p-4 border rounded-md '>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+              <div className='space-y-2'>
+                <Label htmlFor={`degree-${index}`}>Education Degree *</Label>
+                <Controller
+                  name={`educationDegree.${index}.degree`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className='relative'>
+                      <GraduationCap className='absolute left-3 top-1/2 transform -translate-y-1/2 text-emerald-600' />
+                      <Input
+                        id={`degree-${index}`}
+                        className='pl-10'
+                        {...field}
+                      />
+                    </div>
+                  )}
+                />
+                {errors?.educationDegree?.[index]?.degree && (
+                  <p className='text-red-500 text-sm'>
+                    {errors?.educationDegree?.[index]?.degree.message}
+                  </p>
+                )}
+              </div>
+
+              <div className='space-y-2'>
+                <Label htmlFor={`year-${index}`}>Graduation Year *</Label>
+                <Controller
+                  name={`educationDegree.${index}.year`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className='relative'>
+                      <GraduationCap className='absolute left-3 top-1/2 transform -translate-y-1/2 text-emerald-600' />
+                      <Input
+                        id={`year-${index}`}
+                        className='pl-10'
+                        {...field}
+                      />
+                    </div>
+                  )}
+                />
+                {errors?.educationDegree?.[index]?.year && (
+                  <p className='text-red-500 text-sm'>
+                    {errors?.educationDegree?.[index]?.year.message}
+                  </p>
+                )}
+              </div>
+
+              <div className='space-y-2 md:col-span-2'>
+                <Label htmlFor={`school-${index}`}>
+                  School/University Name *
+                </Label>
+                <Controller
+                  name={`educationDegree.${index}.school`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className='relative'>
+                      <GraduationCap className='absolute left-3 top-1/2 transform -translate-y-1/2 text-emerald-600' />
+                      <Input
+                        id={`school-${index}`}
+                        className='pl-10'
+                        {...field}
+                      />
+                    </div>
+                  )}
+                />
+                {errors?.educationDegree?.[index]?.school && (
+                  <p className='text-red-500 text-sm'>
+                    {errors?.educationDegree?.[index]?.school.message}
+                  </p>
+                )}
+              </div>
+            </div>
+            {!(index == 0) && (
+              <Button
+                type='button'
+                variant='outline'
+                onClick={() => educationRemove(index)}
+                className='bg-red-500 text-white'
+              >
+                Remove
+              </Button>
+            )}
+          </div>
+        ))}
+        {educationFields.length < 4 && (
+          <Button
+            type='button'
+            variant='outline'
+            onClick={() =>
+              educationFields.length < 4 &&
+              educationAppend({
+                degree: '',
+                year: '',
+                school: '',
+              })
+            }
+          >
+            Add Education
+          </Button>
+        )}
+      </div>
+      <div className='space-y-4'>
+        <Label className='text-xl'>Job Experience</Label>
         {fields?.map((field: any, index: number) => (
           <div key={field.id} className='space-y-4 p-4 border rounded-md'>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
@@ -221,7 +295,7 @@ export function EducationForm({
               </div>
               <div className='space-y-2'>
                 <Label htmlFor={`rolesAndResponsibilities-${index}`}>
-                  Roles & Responsibilities *
+                  Roles & Responsibilities
                 </Label>
                 <Controller
                   name={`jobExperiences.${index}.rolesAndResponsibilities`}
@@ -264,7 +338,7 @@ export function EducationForm({
                 )}
               </div>
               <div className='space-y-2'>
-                <Label htmlFor={`endDate-${index}`}>End Date</Label>
+                <Label htmlFor={`endDate-${index}`}>End Date *</Label>
                 <Controller
                   name={`jobExperiences.${index}.endDate`}
                   control={control}
