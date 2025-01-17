@@ -259,16 +259,14 @@ export function LicensesForm({
                 )}
               </div>
             </div>
-            {!(index == 0) && (
-              <Button
-                type='button'
-                variant='outline'
-                onClick={() => remove(index)}
-                className='bg-red-500 text-white'
-              >
-                Remove
-              </Button>
-            )}
+            <Button
+              type='button'
+              variant='outline'
+              onClick={() => remove(index)}
+              className='bg-red-500 text-white'
+            >
+              Remove
+            </Button>
           </div>
         ))}
         {fields.length < 6 && (
