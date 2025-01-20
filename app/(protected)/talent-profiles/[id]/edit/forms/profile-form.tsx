@@ -8,9 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { FileText, Calendar, Star, Zap } from 'lucide-react';
+import { FileText, Calendar, Star, Zap, AlertCircle } from 'lucide-react';
 import { FormHeader } from '@/components/form-header';
 import { ProfileDetail } from '@/shared/types/profileDetail';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const profileSchema = z.object({
   profileHeadline: z
@@ -33,6 +34,7 @@ interface ProfileFormProps {
   onUpdate: (data: any) => void;
   closeForm: () => void;
   loading: boolean;
+  errorStatus: string;
 }
 
 export function ProfileForm({
@@ -40,6 +42,7 @@ export function ProfileForm({
   onUpdate,
   closeForm,
   loading,
+  errorStatus,
 }: ProfileFormProps) {
   const {
     control,
@@ -178,7 +181,13 @@ export function ProfileForm({
           )}
         </div>
       </div>
-
+      {errorStatus && (
+        <Alert variant='destructive' className='mt-4'>
+          <AlertCircle className='h-4 w-4' />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{errorStatus}</AlertDescription>
+        </Alert>
+      )}
       <div className='flex justify-end space-x-4'>
         <Button
           type='button'
