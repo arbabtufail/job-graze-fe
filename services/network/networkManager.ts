@@ -37,9 +37,7 @@ export const updatePersonalInformation = (
 
   for (const key in data) {
     const value = data[key as keyof typeof data];
-    if (value) {
-      formData.append(key, value as string | Blob);
-    }
+    formData.append(key, value as string | Blob);
   }
 
   return axios.patch(

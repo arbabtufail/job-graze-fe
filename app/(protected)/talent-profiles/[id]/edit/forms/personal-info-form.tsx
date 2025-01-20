@@ -40,11 +40,11 @@ const personalInfoSchema = z.object({
     .string()
     .min(1, 'Last name is required')
     .max(50, 'Last name must be 50 characters or less'),
-  email: z.string().email('Invalid email address').optional(),
-  mobileNumber: z
-    .string()
-    .regex(/^[0-9]{8,12}$/, 'Invalid phone number')
-    .optional(),
+  email: z.union([z.string().email('Invalid email address'), z.literal('')]),
+  mobileNumber: z.union([
+    z.string().regex(/^[0-9]{8,12}$/, 'Invalid phone number'),
+    z.literal(''),
+  ]),
   country: z.string().min(1, 'Country is required'),
   stateOrProvince: z.string().min(1, 'State/Province is required'),
   city: z.string().optional(),
@@ -87,14 +87,15 @@ export function PersonalInfoForm({
       title: data.title || '',
       firstName: data.firstName || '',
       lastName: data.lastName || '',
-      mobileNumber: data.mobileNumber.toString() || '',
+      mobileNumber: data?.mobileNumber?.toString() || '',
       email: data.email || '',
       country: data.country || '',
       stateOrProvince: data.stateOrProvince || '',
       city: data.city || '',
-      zipCode: data.zipCode || '',
-      address: data.address1 || '',
-      eligibility: data?.eligibility =="false" ? false : true,
+      zipCode: data?.zipCode || '',
+      address: data?.address1 || '',
+      eligibility:
+        data?.eligibility == 'false' || !data?.eligibility ? false : true,
       photo: data.photo || null,
     },
   });
@@ -104,13 +105,14 @@ export function PersonalInfoForm({
       title: formData.title,
       firstName: formData.firstName,
       lastName: formData.lastName,
-      mobileNumber: Number(formData.mobileNumber),
+      mobileNumber: formData.mobileNumber
+        ? Number(formData.mobileNumber)
+        : null,
       country: formData.country,
       stateOrProvince: formData.stateOrProvince,
       city: formData.city,
       zipCode: formData.zipCode,
       address1: formData.address,
-      address2: data.address2,
       eligibility: formData.eligibility.toString(),
       photo: formData.photo,
       email: formData.email,

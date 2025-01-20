@@ -9,7 +9,6 @@ export type PersonalInfo<T> = {
   city: string;
   zipCode: string;
   address1: string;
-  address2: string;
   eligibility: string;
   photo?: T;
 };
