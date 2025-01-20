@@ -42,11 +42,15 @@ export const updatePersonalInformation = (
     }
   }
 
-  return axios.patch(`/talent-profiles/${talentId}/personalInformation`, data, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+  return axios.patch(
+    `/talent-profiles/${talentId}/personalInformation`,
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
+  );
 };
 
 export const bulkCreateTalentProfiles = (
