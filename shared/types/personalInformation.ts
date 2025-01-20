@@ -10,6 +10,6 @@ export type PersonalInfo<T> = {
   zipCode: string;
   address1: string;
   address2: string;
-  eligibility: boolean;
+  eligibility: string;
   photo?: T;
 };

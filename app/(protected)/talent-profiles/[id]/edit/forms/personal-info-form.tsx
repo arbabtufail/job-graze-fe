@@ -94,7 +94,7 @@ export function PersonalInfoForm({
       city: data.city || '',
       zipCode: data.zipCode || '',
       address: data.address1 || '',
-      eligibility: true,
+      eligibility: data?.eligibility =="false" ? false : true,
       photo: data.photo || null,
     },
   });
@@ -111,7 +111,7 @@ export function PersonalInfoForm({
       zipCode: formData.zipCode,
       address1: formData.address,
       address2: data.address2,
-      eligibility: data.eligibility,
+      eligibility: formData.eligibility.toString(),
       photo: formData.photo,
       email: formData.email,
     });
