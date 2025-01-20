@@ -16,10 +16,19 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { User, Phone, MapPin, Globe, FileText, Check } from 'lucide-react';
+import {
+  User,
+  Phone,
+  MapPin,
+  Globe,
+  FileText,
+  Check,
+  AlertCircle,
+} from 'lucide-react';
 import { FormHeader } from '@/components/form-header';
 import { FileUpload } from '@/components/file-upload';
 import { PersonalInfo } from '@/shared/types/personalInformation';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const personalInfoSchema = z.object({
   title: z.string().optional(),
@@ -31,18 +40,22 @@ const personalInfoSchema = z.object({
     .string()
     .min(1, 'Last name is required')
     .max(50, 'Last name must be 50 characters or less'),
-  mobileNumber: z.string().regex(/^[0-9]{8,12}$/, 'Invalid phone number'),
+  email: z.string().email('Invalid email address').optional(),
+  mobileNumber: z
+    .string()
+    .regex(/^[0-9]{8,12}$/, 'Invalid phone number')
+    .optional(),
   country: z.string().min(1, 'Country is required'),
   stateOrProvince: z.string().min(1, 'State/Province is required'),
-  city: z.string().min(1, 'City is required'),
+  city: z.string().optional(),
   zipCode: z
     .string()
-    .min(1, 'Zip code is required')
-    .max(10, 'Zip code must be 10 characters or less'),
+    .max(10, 'Zip code must be 10 characters or less')
+    .optional(),
   address: z
     .string()
-    .min(1, 'Address is required')
-    .max(500, 'Address must be 500 characters or less'),
+    .max(500, 'Address must be 500 characters or less')
+    .optional(),
   eligibility: z.boolean(),
   photo: z.any().optional(),
 });
@@ -54,6 +67,7 @@ interface PersonalInfoFormProps {
   onUpdate: (data: any) => void;
   closeForm: () => void;
   loading: boolean;
+  errorStatus: string;
 }
 
 export function PersonalInfoForm({
@@ -61,6 +75,7 @@ export function PersonalInfoForm({
   onUpdate,
   closeForm,
   loading,
+  errorStatus,
 }: PersonalInfoFormProps) {
   const {
     control,
@@ -72,7 +87,8 @@ export function PersonalInfoForm({
       title: data.title || '',
       firstName: data.firstName || '',
       lastName: data.lastName || '',
-      mobileNumber: data.mobileNumber || '',
+      mobileNumber: data.mobileNumber.toString() || '',
+      email: data.email || '',
       country: data.country || '',
       stateOrProvince: data.stateOrProvince || '',
       city: data.city || '',
@@ -88,7 +104,7 @@ export function PersonalInfoForm({
       title: formData.title,
       firstName: formData.firstName,
       lastName: formData.lastName,
-      mobileNumber: formData.mobileNumber,
+      mobileNumber: Number(formData.mobileNumber),
       country: formData.country,
       stateOrProvince: formData.stateOrProvince,
       city: formData.city,
@@ -97,7 +113,7 @@ export function PersonalInfoForm({
       address2: data.address2,
       eligibility: data.eligibility,
       photo: formData.photo,
-      email: data.email,
+      email: formData.email,
     });
   };
 
@@ -176,7 +192,7 @@ export function PersonalInfoForm({
         </div>
 
         <div className='space-y-2'>
-          <Label htmlFor='mobileNumber'>Mobile Number *</Label>
+          <Label htmlFor='mobileNumber'>Mobile Number</Label>
           <Controller
             name='mobileNumber'
             control={control}
@@ -191,6 +207,23 @@ export function PersonalInfoForm({
             <p className='text-red-500 text-sm'>
               {errors.mobileNumber.message}
             </p>
+          )}
+        </div>
+
+        <div className='space-y-2'>
+          <Label htmlFor='email'>Email</Label>
+          <Controller
+            name='email'
+            control={control}
+            render={({ field }) => (
+              <div className='relative'>
+                <Phone className='absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-600' />
+                <Input id='email' className='pl-10' {...field} />
+              </div>
+            )}
+          />
+          {errors.email && (
+            <p className='text-red-500 text-sm'>{errors.email.message}</p>
           )}
         </div>
 
@@ -231,7 +264,7 @@ export function PersonalInfoForm({
         </div>
 
         <div className='space-y-2'>
-          <Label htmlFor='city'>City *</Label>
+          <Label htmlFor='city'>City</Label>
           <Controller
             name='city'
             control={control}
@@ -248,7 +281,7 @@ export function PersonalInfoForm({
         </div>
 
         <div className='space-y-2'>
-          <Label htmlFor='zipCode'>Zip Code *</Label>
+          <Label htmlFor='zipCode'>Zip Code</Label>
           <Controller
             name='zipCode'
             control={control}
@@ -266,7 +299,7 @@ export function PersonalInfoForm({
       </div>
 
       <div className='space-y-2'>
-        <Label htmlFor='address'>Address *</Label>
+        <Label htmlFor='address'>Address</Label>
         <Controller
           name='address'
           control={control}
@@ -309,7 +342,13 @@ export function PersonalInfoForm({
           />
         )}
       />
-
+      {errorStatus && (
+        <Alert variant='destructive' className='mt-4'>
+          <AlertCircle className='h-4 w-4' />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{errorStatus}</AlertDescription>
+        </Alert>
+      )}
       <div className='flex justify-end space-x-4'>
         <Button
           type='button'

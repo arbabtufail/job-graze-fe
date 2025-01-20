@@ -21,17 +21,21 @@ import {
   FileText,
   Calendar,
   CheckSquare,
+  FileCheck,
+  AlertCircle,
 } from 'lucide-react';
 import { FormHeader } from '@/components/form-header';
 import { ProfessionalLicense } from '@/shared/types/professionalLicense';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const licensesSchema = z.object({
-  license: z.array(
+  licenses: z.array(
     z.object({
       licenseType: z.string().min(1, 'License type is required'),
       licenseState: z.string().min(1, 'License state is required'),
       licenseCountry: z.string().min(1, 'License country is required'),
       licenseNumber: z.string().min(1, 'License number is required'),
+      licenseIssuedBy: z.string().min(1, 'License issued by is required'),
       licenseEffectiveDate: z
         .string()
         .min(1, 'License effective date is required'),
@@ -53,6 +57,7 @@ interface LicensesFormProps {
   onUpdate: (data: any) => void;
   closeForm: () => void;
   loading: boolean;
+  errorStatus: string;
 }
 
 export function LicensesForm({
@@ -60,6 +65,7 @@ export function LicensesForm({
   onUpdate,
   closeForm,
   loading,
+  errorStatus,
 }: LicensesFormProps) {
   const {
     control,
@@ -68,48 +74,44 @@ export function LicensesForm({
   } = useForm<LicensesFormData>({
     resolver: zodResolver(licensesSchema),
     defaultValues: {
-      license: [
-        {
-          licenseType: data.licenseType || '',
-          licenseState: data.licenseState || '',
-          licenseCountry: data.licenseCountry || '',
-          licenseNumber: data.licenseNumber || '',
-          licenseEffectiveDate:
-            new Date(data.licenseEffectiveDate).toISOString().split('T')[0] ||
-            '',
-          licenseExpirationDate:
-            new Date(data.licenseExpirationDate).toISOString().split('T')[0] ||
-            '',
-        },
-      ],
+      licenses:
+        data.licenses.length > 0
+          ? data.licenses.map((item) => ({
+              ...item,
+              licenseEffectiveDate:
+                new Date(item.licenseEffectiveDate)
+                  .toISOString()
+                  .split('T')[0] || '',
+              licenseExpirationDate:
+                new Date(item.licenseExpirationDate)
+                  .toISOString()
+                  .split('T')[0] || '',
+            }))
+          : [
+              {
+                licenseType: '',
+                licenseState: '',
+                licenseCountry: '',
+                licenseNumber: '',
+                licenseIssuedBy: '',
+                licenseEffectiveDate: '',
+                licenseExpirationDate: '',
+              },
+            ],
       nclexRn: data.nclexRn || '',
       euRn: data.euRn || '',
-      englishLanguageExam: 'no',
-      spanishLanguageExam: 'yes',
+      englishLanguageExam: data.englishLanguageExam,
+      spanishLanguageExam: data.spanishLanguageExam,
     },
   });
 
   const { fields, append, remove } = useFieldArray({
     control,
-    name: 'license',
+    name: 'licenses',
   });
 
   const onSubmit = (formData: LicensesFormData) => {
-    onUpdate({
-      ...formData,
-      licenseType: formData.license[0].licenseType,
-      licenseState: formData.license[0].licenseState,
-      licenseCountry: formData.license[0].licenseCountry,
-      licenseNumber: formData.license[0].licenseNumber,
-
-      licenseEffectiveDate: new Date(
-        formData.license[0].licenseEffectiveDate
-      ).toISOString(),
-      licenseExpirationDate: new Date(
-        formData.license[0].licenseExpirationDate
-      ).toISOString(),
-      licenseIssuedBy: data.licenseIssuedBy,
-    });
+    onUpdate(formData);
   };
 
   return (
@@ -134,7 +136,7 @@ export function LicensesForm({
               <div className='space-y-2'>
                 <Label htmlFor='licenseType'>License Type *</Label>
                 <Controller
-                  name={`license.${index}.licenseType`}
+                  name={`licenses.${index}.licenseType`}
                   control={control}
                   render={({ field }) => (
                     <div className='relative'>
@@ -143,9 +145,9 @@ export function LicensesForm({
                     </div>
                   )}
                 />
-                {errors?.license?.[index]?.licenseType && (
+                {errors?.licenses?.[index]?.licenseType && (
                   <p className='text-red-500 text-sm'>
-                    {errors?.license[index]?.licenseType.message}
+                    {errors?.licenses[index]?.licenseType.message}
                   </p>
                 )}
               </div>
@@ -153,7 +155,7 @@ export function LicensesForm({
               <div className='space-y-2'>
                 <Label htmlFor='licenseState'>License State *</Label>
                 <Controller
-                  name={`license.${index}.licenseState`}
+                  name={`licenses.${index}.licenseState`}
                   control={control}
                   render={({ field }) => (
                     <div className='relative'>
@@ -162,9 +164,9 @@ export function LicensesForm({
                     </div>
                   )}
                 />
-                {errors?.license?.[index]?.licenseState && (
+                {errors?.licenses?.[index]?.licenseState && (
                   <p className='text-red-500 text-sm'>
-                    {errors?.license[index]?.licenseState.message}
+                    {errors?.licenses[index]?.licenseState.message}
                   </p>
                 )}
               </div>
@@ -172,7 +174,7 @@ export function LicensesForm({
               <div className='space-y-2'>
                 <Label htmlFor='licenseCountry'>License Country *</Label>
                 <Controller
-                  name={`license.${index}.licenseCountry`}
+                  name={`licenses.${index}.licenseCountry`}
                   control={control}
                   render={({ field }) => (
                     <div className='relative'>
@@ -181,9 +183,31 @@ export function LicensesForm({
                     </div>
                   )}
                 />
-                {errors?.license?.[index]?.licenseCountry && (
+                {errors?.licenses?.[index]?.licenseCountry && (
                   <p className='text-red-500 text-sm'>
-                    {errors?.license[index]?.licenseCountry.message}
+                    {errors?.licenses[index]?.licenseCountry.message}
+                  </p>
+                )}
+              </div>
+              <div className='space-y-2'>
+                <Label htmlFor='licenseIssuedBy'>License Issued By *</Label>
+                <Controller
+                  name={`licenses.${index}.licenseIssuedBy`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className='relative'>
+                      <FileCheck className='absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-600' />
+                      <Input
+                        id='licenseIssuedBy'
+                        className='pl-10'
+                        {...field}
+                      />
+                    </div>
+                  )}
+                />
+                {errors?.licenses?.[index]?.licenseIssuedBy && (
+                  <p className='text-red-500 text-sm'>
+                    {errors?.licenses[index]?.licenseIssuedBy.message}
                   </p>
                 )}
               </div>
@@ -191,7 +215,7 @@ export function LicensesForm({
               <div className='space-y-2'>
                 <Label htmlFor='licenseNumber'>License Number *</Label>
                 <Controller
-                  name={`license.${index}.licenseNumber`}
+                  name={`licenses.${index}.licenseNumber`}
                   control={control}
                   render={({ field }) => (
                     <div className='relative'>
@@ -200,9 +224,9 @@ export function LicensesForm({
                     </div>
                   )}
                 />
-                {errors?.license?.[index]?.licenseNumber && (
+                {errors?.licenses?.[index]?.licenseNumber && (
                   <p className='text-red-500 text-sm'>
-                    {errors?.license[index]?.licenseNumber.message}
+                    {errors?.licenses[index]?.licenseNumber.message}
                   </p>
                 )}
               </div>
@@ -212,7 +236,7 @@ export function LicensesForm({
                   License Effective Date *
                 </Label>
                 <Controller
-                  name={`license.${index}.licenseEffectiveDate`}
+                  name={`licenses.${index}.licenseEffectiveDate`}
                   control={control}
                   render={({ field }) => (
                     <div className='relative'>
@@ -226,9 +250,9 @@ export function LicensesForm({
                     </div>
                   )}
                 />
-                {errors?.license?.[index]?.licenseEffectiveDate && (
+                {errors?.licenses?.[index]?.licenseEffectiveDate && (
                   <p className='text-red-500 text-sm'>
-                    {errors?.license[index]?.licenseEffectiveDate.message}
+                    {errors?.licenses[index]?.licenseEffectiveDate.message}
                   </p>
                 )}
               </div>
@@ -238,7 +262,7 @@ export function LicensesForm({
                   License Expiration Date *
                 </Label>
                 <Controller
-                  name={`license.${index}.licenseExpirationDate`}
+                  name={`licenses.${index}.licenseExpirationDate`}
                   control={control}
                   render={({ field }) => (
                     <div className='relative'>
@@ -252,9 +276,9 @@ export function LicensesForm({
                     </div>
                   )}
                 />
-                {errors?.license?.[index]?.licenseExpirationDate && (
+                {errors?.licenses?.[index]?.licenseExpirationDate && (
                   <p className='text-red-500 text-sm'>
-                    {errors?.license[index]?.licenseExpirationDate.message}
+                    {errors?.licenses[index]?.licenseExpirationDate.message}
                   </p>
                 )}
               </div>
@@ -282,6 +306,7 @@ export function LicensesForm({
                 licenseNumber: '',
                 licenseEffectiveDate: '',
                 licenseExpirationDate: '',
+                licenseIssuedBy: '',
               })
             }
           >
@@ -366,8 +391,8 @@ export function LicensesForm({
                     <SelectValue placeholder='Select option' />
                   </SelectTrigger>
                   <SelectContent className='bg-white'>
-                    <SelectItem value='yes'>Yes</SelectItem>
-                    <SelectItem value='no'>No</SelectItem>
+                    <SelectItem value='Yes'>Yes</SelectItem>
+                    <SelectItem value='No'>No</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -395,8 +420,8 @@ export function LicensesForm({
                     <SelectValue placeholder='Select option' />
                   </SelectTrigger>
                   <SelectContent className='bg-white'>
-                    <SelectItem value='yes'>Yes</SelectItem>
-                    <SelectItem value='no'>No</SelectItem>
+                    <SelectItem value='Yes'>Yes</SelectItem>
+                    <SelectItem value='No'>No</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -409,7 +434,13 @@ export function LicensesForm({
           )}
         </div>
       </div>
-
+      {errorStatus && (
+        <Alert variant='destructive' className='mt-4'>
+          <AlertCircle className='h-4 w-4' />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{errorStatus}</AlertDescription>
+        </Alert>
+      )}
       <div className='flex justify-end space-x-4'>
         <Button
           type='button'

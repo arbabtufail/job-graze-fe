@@ -3,7 +3,7 @@ export type PersonalInfo<T> = {
   firstName: string;
   lastName: string;
   email: string;
-  mobileNumber: string;
+  mobileNumber: number;
   country: string;
   stateOrProvince: string;
   city: string;

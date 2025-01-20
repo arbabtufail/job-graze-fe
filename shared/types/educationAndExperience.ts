@@ -1,11 +1,14 @@
 export type EducationAndExperience = {
-  degree: string;
-  year: string;
-  school: string;
+  education: EducationDegree[];
   jobExperiences: JobExperience[];
   languages: string[];
 };
 
+export type EducationDegree = {
+  degree: string;
+  year: number;
+  school: string;
+};
 export type JobExperience = {
   jobTitle: string;
   rolesAndResponsibilities: string;

@@ -8,52 +8,53 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { GraduationCap, Briefcase, Globe } from 'lucide-react';
+import { GraduationCap, Briefcase, Globe, AlertCircle } from 'lucide-react';
 import { FormHeader } from '@/components/form-header';
 import { EducationAndExperience } from '@/shared/types/educationAndExperience';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const educationSchema = z.object({
-  educationDegree: z.array(
-    z.object({
-      degree: z
-        .string()
-        .min(1, 'Education degree is required')
-        .max(254, 'Education degree must be 254 characters or less'),
-      year: z
-        .string()
-        .min(4, 'Graduation year must be 4 digits')
-        .max(4, 'Graduation year must be 4 digits'),
-      school: z
-        .string()
-        .min(1, 'School/University name is required')
-        .max(254, 'School/University name must be 254 characters or less'),
-    })
-  ),
-  jobExperiences: z
+  education: z
     .array(
-      z
-        .object({
-          jobTitle: z
-            .string()
-            .min(1, 'Job title is required')
-            .max(254, 'Job title must be 254 characters or less'),
-          rolesAndResponsibilities: z
-            .string()
-            .max(254, 'Roles & responsibilities must be 254 characters or less')
-            .optional(),
-          startDate: z.string().min(1, 'Start date is required'),
-          endDate: z.string().min(1, 'End date is required'),
-        })
-        .refine(
-          (data) =>
-            !data.endDate || new Date(data.startDate) <= new Date(data.endDate),
-          {
-            message: 'Start date cannot be later than the end date',
-            path: ['startDate'], // Attach error to the `endDate` field
-          }
-        )
+      z.object({
+        degree: z
+          .string()
+          .min(1, 'Education degree is required')
+          .max(254, 'Education degree must be 254 characters or less'),
+        year: z
+          .string()
+          .min(4, 'Graduation year must be 4 digits')
+          .max(4, 'Graduation year must be 4 digits'),
+        school: z
+          .string()
+          .min(1, 'School/University name is required')
+          .max(254, 'School/University name must be 254 characters or less'),
+      })
     )
-    .min(1, 'At least one job experience is required'),
+    .min(1, 'At least one education record is required'),
+  jobExperiences: z.array(
+    z
+      .object({
+        jobTitle: z
+          .string()
+          .min(1, 'Job title is required')
+          .max(254, 'Job title must be 254 characters or less'),
+        rolesAndResponsibilities: z
+          .string()
+          .max(254, 'Roles & responsibilities must be 254 characters or less')
+          .optional(),
+        startDate: z.string().min(1, 'Start date is required'),
+        endDate: z.string().min(1, 'End date is required'),
+      })
+      .refine(
+        (data) =>
+          !data.endDate || new Date(data.startDate) <= new Date(data.endDate),
+        {
+          message: 'Start date cannot be later than the end date',
+          path: ['startDate'], // Attach error to the `endDate` field
+        }
+      )
+  ),
   languages: z
     .string()
     .min(1, 'Languages spoken is required')
@@ -71,6 +72,7 @@ interface EducationFormProps {
   onUpdate: (data: any) => void;
   closeForm: () => void;
   loading: boolean;
+  errorStatus: string;
 }
 
 export function EducationForm({
@@ -78,6 +80,7 @@ export function EducationForm({
   onUpdate,
   closeForm,
   loading,
+  errorStatus,
 }: EducationFormProps) {
   const {
     control,
@@ -86,14 +89,19 @@ export function EducationForm({
   } = useForm<EducationFormData>({
     resolver: zodResolver(educationSchema),
     defaultValues: {
-      educationDegree: [
-        {
-          degree: data.degree || '',
-          year: data.year || '',
-          school: data.school || '',
-        },
-      ],
-
+      education:
+        data?.education?.length > 0
+          ? data.education.map((education) => ({
+              ...education,
+              year: education.year.toString(),
+            }))
+          : [
+              {
+                degree: '',
+                year: '',
+                school: '',
+              },
+            ],
       jobExperiences:
         data?.jobExperiences?.length > 0
           ? data.jobExperiences.map((jobExperience) => ({
@@ -128,14 +136,15 @@ export function EducationForm({
     remove: educationRemove,
   } = useFieldArray({
     control,
-    name: 'educationDegree',
+    name: 'education',
   });
 
   const onSubmit = (formData: EducationFormData) => {
     onUpdate({
-      degree: formData.educationDegree[0].degree,
-      year: formData.educationDegree[0].year,
-      school: formData.educationDegree[0].school,
+      education: formData.education.map((education) => ({
+        ...education,
+        year: Number(education.year),
+      })),
       jobExperiences: formData.jobExperiences.map((jobExperience) => ({
         ...jobExperience,
         startDate: new Date(jobExperience.startDate).toISOString(),
@@ -169,7 +178,7 @@ export function EducationForm({
               <div className='space-y-2'>
                 <Label htmlFor={`degree-${index}`}>Education Degree *</Label>
                 <Controller
-                  name={`educationDegree.${index}.degree`}
+                  name={`education.${index}.degree`}
                   control={control}
                   render={({ field }) => (
                     <div className='relative'>
@@ -182,9 +191,9 @@ export function EducationForm({
                     </div>
                   )}
                 />
-                {errors?.educationDegree?.[index]?.degree && (
+                {errors?.education?.[index]?.degree && (
                   <p className='text-red-500 text-sm'>
-                    {errors?.educationDegree?.[index]?.degree.message}
+                    {errors?.education?.[index]?.degree.message}
                   </p>
                 )}
               </div>
@@ -192,7 +201,7 @@ export function EducationForm({
               <div className='space-y-2'>
                 <Label htmlFor={`year-${index}`}>Graduation Year *</Label>
                 <Controller
-                  name={`educationDegree.${index}.year`}
+                  name={`education.${index}.year`}
                   control={control}
                   render={({ field }) => (
                     <div className='relative'>
@@ -205,9 +214,9 @@ export function EducationForm({
                     </div>
                   )}
                 />
-                {errors?.educationDegree?.[index]?.year && (
+                {errors?.education?.[index]?.year && (
                   <p className='text-red-500 text-sm'>
-                    {errors?.educationDegree?.[index]?.year.message}
+                    {errors?.education?.[index]?.year.message}
                   </p>
                 )}
               </div>
@@ -217,7 +226,7 @@ export function EducationForm({
                   School/University Name *
                 </Label>
                 <Controller
-                  name={`educationDegree.${index}.school`}
+                  name={`education.${index}.school`}
                   control={control}
                   render={({ field }) => (
                     <div className='relative'>
@@ -230,9 +239,9 @@ export function EducationForm({
                     </div>
                   )}
                 />
-                {errors?.educationDegree?.[index]?.school && (
+                {errors?.education?.[index]?.school && (
                   <p className='text-red-500 text-sm'>
-                    {errors?.educationDegree?.[index]?.school.message}
+                    {errors?.education?.[index]?.school.message}
                   </p>
                 )}
               </div>
@@ -398,6 +407,14 @@ export function EducationForm({
           <p className='text-red-500 text-sm'>{errors.languages.message}</p>
         )}
       </div>
+
+      {errorStatus && (
+        <Alert variant='destructive' className='mt-4'>
+          <AlertCircle className='h-4 w-4' />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{errorStatus}</AlertDescription>
+        </Alert>
+      )}
 
       <div className='flex justify-end space-x-4'>
         <Button

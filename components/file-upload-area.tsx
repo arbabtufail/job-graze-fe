@@ -9,13 +9,13 @@ import { Progress } from '@/components/ui/progress';
 interface FileUploadAreaProps {
   onFileAccepted: (file: File) => void;
   uploadProgress?: number;
-  simulateUpload: () => void;
+  resetFile: () => void;
 }
 
 export function FileUploadArea({
   onFileAccepted,
   uploadProgress,
-  simulateUpload,
+  resetFile,
 }: FileUploadAreaProps) {
   const [file, setFile] = useState<File | null>(null);
 
@@ -25,7 +25,6 @@ export function FileUploadArea({
         const acceptedFile = acceptedFiles[0];
         setFile(acceptedFile);
         onFileAccepted(acceptedFile);
-        simulateUpload();
       }
     },
     [onFileAccepted]
@@ -41,7 +40,7 @@ export function FileUploadArea({
 
   const removeFile = () => {
     setFile(null);
-    // setUploadProgress(0);
+    resetFile();
   };
 
   return (
