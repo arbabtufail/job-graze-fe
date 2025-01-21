@@ -9,8 +9,6 @@ import {
   Search,
   UserPlus,
   Users,
-  Briefcase,
-  Calendar,
   ArrowUpRight,
   Upload,
   Users2,
@@ -28,6 +26,7 @@ import {
   getMonthlyTalentAcquisitionCount,
   getProfileCount,
   getRecentUpdates,
+  getTalentSpecializations,
 } from '@/services/network/networkManager';
 import { timeAgo } from '@/lib/utils';
 
@@ -45,12 +44,17 @@ type MonthlyTalentAcquisition = {
 };
 
 export default function DashboardPage() {
-  const [dashboardData, setDashboardData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [recentUpdates, setRecentUpdates] = useState<RecentUpdates[]>([]);
-  const [monthlyAcqusition, setMonthlyAcqusition] = useState<
+  const [monthlyAcquisition, setMonthlyAcquisition] = useState<
     MonthlyTalentAcquisition[]
   >([]);
+
+  const [talentSpecialization, setTalentSpecialization] = useState<
+    { name: string; value: number }[]
+  >([]);
+
+
   const [profileCount, setProfileCount] = useState<{
     totalProfilesCount: number;
     completedProfilesCount: number;
@@ -65,27 +69,27 @@ export default function DashboardPage() {
     const fetchDashboardData = async () => {
       try {
         const [
-          recentUpdates,
-          monthlyTalentAcquisition,
           profileCount,
-          dashboard,
+          monthlyTalentAcquisition,
+          specializations,
+          recentUpdates,
         ] = await Promise.all([
-          getRecentUpdates(),
-          getMonthlyTalentAcquisitionCount(),
           getProfileCount(),
-          fetch('/api/dashboard'),
+          getMonthlyTalentAcquisitionCount(),
+          getTalentSpecializations(),
+          getRecentUpdates(),
         ]);
-        if (recentUpdates.status === 200) {
-          setRecentUpdates(recentUpdates.data);
+        if (profileCount.status === 200) {
+          setProfileCount(profileCount.data.data);
         }
         if (monthlyTalentAcquisition.status === 200) {
-          setMonthlyAcqusition(monthlyTalentAcquisition.data);
+          setMonthlyAcquisition(monthlyTalentAcquisition.data.data);
         }
-        if (profileCount.status === 200) {
-          setProfileCount(profileCount.data);
+        if (specializations.status === 200) {
+          setTalentSpecialization(specializations.data.data);
         }
-        if (dashboard.status === 200) {
-          setDashboardData(await dashboard.json());
+        if (recentUpdates.status === 200) {
+          setRecentUpdates(recentUpdates.data.data);
         }
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -101,7 +105,6 @@ export default function DashboardPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Searching for:', searchQuery);
     // Implement search functionality here
   };
 
@@ -181,9 +184,9 @@ export default function DashboardPage() {
             <p>Loading charts...</p>
           ) : (
             <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8 mb-8'>
-              <TalentAcquisitionChart data={monthlyAcqusition || []} />
+              <TalentAcquisitionChart data={monthlyAcquisition || []} />
               <TalentSpecializationChart
-                data={dashboardData?.talentSpecialization || []}
+                data={talentSpecialization || []}
               />
             </div>
           )}
@@ -195,8 +198,8 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <ul className='space-y-4'>
-                  {recentUpdates.map((activity) => (
-                    <li key={activity.id} className='flex items-center'>
+                  {recentUpdates.map((activity, index) => (
+                    <li key={index} className='flex items-center'>
                       {activity.type === 'added' && (
                         <UserPlus className='h-5 w-5 mr-3 text-[#F2994A]' />
                       )}

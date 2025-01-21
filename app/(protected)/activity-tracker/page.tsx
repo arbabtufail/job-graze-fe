@@ -44,7 +44,7 @@ export default function ActivityTrackerPage() {
           return;
         }
         const sanitizedData: ActivityData = {
-          added: response.data.added
+          added: response.data.data.added
             .sort(
               (a: any, b: any) =>
                 new Date(b.date).getTime() - new Date(a.date).getTime()
@@ -53,7 +53,7 @@ export default function ActivityTrackerPage() {
               ...activity,
               type: 'added',
             })),
-          updated: response.data.updated
+          updated: response.data.data.updated
             .sort(
               (a: any, b: any) =>
                 new Date(b.date).getTime() - new Date(a.date).getTime()
@@ -62,7 +62,7 @@ export default function ActivityTrackerPage() {
               ...activity,
               type: 'updated',
             })),
-          deleted: response.data.deleted
+          deleted: response.data.data.deleted
             .sort(
               (a: any, b: any) =>
                 new Date(b.date).getTime() - new Date(a.date).getTime()
@@ -83,9 +83,9 @@ export default function ActivityTrackerPage() {
         setFullData(finalData);
         setActivities(finalData);
         setStats({
-          newTalents: response.data.added.length,
-          updatedProfiles: response.data.updated.length,
-          deletedProfiles: response.data.deleted.length,
+          newTalents: response.data.data.added.length,
+          updatedProfiles: response.data.data.updated.length,
+          deletedProfiles: response.data.data.deleted.length,
         });
       } catch (error) {
         console.error('Error fetching activity data:', error);

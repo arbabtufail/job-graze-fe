@@ -20,243 +20,50 @@ import {
 } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import Papa from 'papaparse';
-import { createTalentProfile } from '@/services/network/networkManager';
+import { bulkCreateTalentProfiles } from '@/services/network/networkManager';
 
 export default function BulkUploadPage() {
-  const [file, setFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [data, setData] = useState<any>(null);
+  const [responseData, setResponseData] = useState<{
+    rejectedProfilesCount: number;
+    createdProfilesCount: number;
+    rejectedProfiles: {
+      invalidRecordNumber: number;
+      errors: string;
+    }[];
+  } | null>(null);
   const [uploadStatus, setUploadStatus] = useState<
     'idle' | 'success' | 'error'
   >('idle');
 
-  // const handleFileAccepted = (acceptedFile: File) => {
-  //   setFile(acceptedFile);
-  //   Papa.parse(acceptedFile, {
-  //     header: true, // Assume the first row contains headers
-  //     skipEmptyLines: true,
-  //     complete: (results) => {
-  //       const parsedData = results.data;
-
-  //       // Transform the parsed data into the JSON structure
-  //       const transformedData = parsedData.map((row: any) => {
-  //         return {
-  //           candidate: {
-  //             title: row['Title'],
-  //             firstName: row['First Name'],
-  //             lastName: row['Last Name'],
-  //             email: row['Email'],
-  //             mobileNumber: row['Mobile Number'],
-  //             country: row['Country'],
-  //             stateOrProvince: row['State/Province'],
-  //             city: row['City'],
-  //             zipCode: row['Zip Code'],
-  //             address1: row['Address 1'],
-  //             address2: row['Address 2'],
-  //             eligibility: row['Eligibility'],
-  //           },
-  //           educationAndExperience: {
-  //             degree: row['Degree'],
-  //             year: row['Year'],
-  //             school: row['School'],
-  //             jobExperiences: [
-  //               {
-  //                 jobTitle: row['Job Titles'],
-  //                 rolesAndResponsibilities: row['Job Roles'],
-  //                 startDate: row['Job Start Dates'],
-  //                 endDate: row['Job End Dates'],
-  //               },
-  //             ],
-  //             languages: row['Languages'] ? row['Languages'].split(',') : [],
-  //           },
-  //           profileDetails: {
-  //             profileHeadline: row['Profile Headline'],
-  //             backgroundSummary: row['Background Summary'],
-  //             availableStartDate: row['Available Start Date'],
-  //             specialties: row['Specialties']
-  //               ? row['Specialties'].split(',')
-  //               : [],
-  //             skills: row['Skills'] ? row['Skills'].split(',') : [],
-  //           },
-  //           professionalLicense: {
-  //             licenseType: row['License Type'],
-  //             licenseState: row['License State'],
-  //             licenseCountry: row['License Country'],
-  //             licenseNumber: row['License Number'],
-  //             licenseIssuedBy: row['License Issued By'],
-  //             licenseEffectiveDate: row['License Effective Date'],
-  //             licenseExpirationDate: row['License Expiration Date'],
-  //             nclexRn: row['NCLEX RN'],
-  //             euRn: row['EU RN'],
-  //             languageExam: row['Language Exam'],
-  //           },
-  //         };
-  //       });
-  //       setData(transformedData);
-  //       console.log('Transformed Data: ', transformedData);
-  //     },
-  //     error: (error) => {
-  //       console.error('Error parsing CSV file: ', error);
-  //     },
-  //   });
-  //   // setTimeout(() => {
-  //   //   setUploadStatus(Math.random() > 0.5 ? 'success' : 'error');
-  //   // }, 3000);
-  // };
-
-  const handleFileAccepted = (acceptedFile: File) => {
-    setFile(acceptedFile);
-    Papa.parse(acceptedFile, {
-      header: true, // Assume the first row contains headers
-      skipEmptyLines: true,
-      complete: (results) => {
-        const parsedData = results.data;
-
-        // Transform the parsed data into the JSON structure
-        const transformedData = parsedData.map((row: any, index: number) => {
-          // Collect errors for the current row
-          const errors: string[] = [];
-
-          // Function to validate a field
-          const validateField = (fieldName: string, value: string) => {
-            if (!value || value.trim() === '') {
-              errors.push(
-                `Row ${index + 1}: Missing value for "${fieldName}".`
-              );
-            }
-            return value;
-          };
-
-          // Validate required fields
-          const candidate = {
-            title: validateField('Title', row['Title']),
-            firstName: validateField('First Name', row['First Name']),
-            lastName: validateField('Last Name', row['Last Name']),
-            email: validateField('Email', row['Email']),
-            mobileNumber: validateField('Mobile Number', row['Mobile Number']),
-            country: validateField('Country', row['Country']),
-            stateOrProvince: validateField(
-              'State/Province',
-              row['State/Province']
-            ),
-            city: validateField('City', row['City']),
-            zipCode: validateField('Zip Code', row['Zip Code']),
-            address1: validateField('Address 1', row['Address 1']),
-            address2: validateField('Address 2', row['Address 2']),
-            eligibility: validateField('Eligibility', row['Eligibility']),
-          };
-
-          const educationAndExperience = {
-            degree: validateField('Degree', row['Degree']),
-            year: validateField('Year', row['Year']),
-            school: validateField('School', row['School']),
-            jobExperiences: [
-              {
-                jobTitle: validateField('Job Titles', row['Job Titles']),
-                rolesAndResponsibilities: validateField(
-                  'Job Roles',
-                  row['Job Roles']
-                ),
-                startDate: validateField(
-                  'Job Start Dates',
-                  row['Job Start Dates']
-                ),
-                endDate: validateField('Job End Dates', row['Job End Dates']),
-              },
-            ],
-            languages: row['Languages'] ? row['Languages'].split(',') : [],
-          };
-
-          const profileDetails = {
-            profileHeadline: validateField(
-              'Profile Headline',
-              row['Profile Headline']
-            ),
-            backgroundSummary: validateField(
-              'Background Summary',
-              row['Background Summary']
-            ),
-            availableStartDate: validateField(
-              'Available Start Date',
-              row['Available Start Date']
-            ),
-            specialties: row['Specialties']
-              ? row['Specialties'].split(',')
-              : [],
-            skills: row['Skills'] ? row['Skills'].split(',') : [],
-          };
-
-          const professionalLicense = {
-            licenseType: validateField('License Type', row['License Type']),
-            licenseState: validateField('License State', row['License State']),
-            licenseCountry: validateField(
-              'License Country',
-              row['License Country']
-            ),
-            licenseNumber: validateField(
-              'License Number',
-              row['License Number']
-            ),
-            licenseIssuedBy: validateField(
-              'License Issued By',
-              row['License Issued By']
-            ),
-            licenseEffectiveDate: validateField(
-              'License Effective Date',
-              row['License Effective Date']
-            ),
-            licenseExpirationDate: validateField(
-              'License Expiration Date',
-              row['License Expiration Date']
-            ),
-            nclexRn: validateField('NCLEX RN', row['NCLEX RN']),
-            euRn: validateField('EU RN', row['EU RN']),
-            languageExam: validateField('Language Exam', row['Language Exam']),
-          };
-
-          if (errors.length > 0) {
-            throw new Error(errors.join('\n'));
-          }
-
-          return {
-            candidate,
-            educationAndExperience,
-            profileDetails,
-            professionalLicense,
-          };
-        });
-
-        setData(transformedData);
-        console.log('Transformed Data: ', transformedData);
-      },
-      error: (error) => {
-        console.log('Error parsing CSV file: ', error);
-      },
-    });
-  };
-
-  const simulateUpload = async () => {
-    setUploadProgress(0);
+  const handleFileAccepted = async (acceptedFile: File) => {
+    setUploadProgress(20);
     try {
-      // const res = await createTalentProfile(data);
-      // console.log('Response: ', res);
-      // if (res.status === 200) {
-      setUploadStatus('success');
-      // }
+      setUploadProgress(50);
+      const res = await bulkCreateTalentProfiles(acceptedFile);
+      setUploadProgress(80);
+      if (res.data.code === 200) {
+        setUploadProgress(100);
+        setResponseData(res.data.data);
+        setUploadStatus('success');
+      } else {
+        setUploadStatus('error');
+      }
     } catch (error) {
-      console.error('Error uploading data: ', error);
       setUploadStatus('error');
     }
-    const interval = setInterval(() => {
-      setUploadProgress((prevProgress) => {
-        if (prevProgress >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
-        return prevProgress + 10;
-      });
-    }, 500);
+  };
+
+  const resetFile = () => {
+    setResponseData(null);
+    setUploadStatus('idle');
+  };
+
+  const downloadFile = () => {
+    const link = document.createElement('a');
+    link.href = '/bulkTalentsTemplates.csv';
+    link.download = 'bulkTalentsTemplates.csv';
+    link.click();
   };
 
   const templateStructure = [
@@ -310,15 +117,17 @@ export default function BulkUploadPage() {
                 <CardContent>
                   <FileUploadArea
                     onFileAccepted={handleFileAccepted}
-                    simulateUpload={() => simulateUpload()}
                     uploadProgress={uploadProgress}
+                    resetFile={resetFile}
                   />
-                  {uploadStatus === 'success' && (
+                  {uploadStatus === 'success' && responseData && (
                     <Alert className='mt-4'>
                       <CheckCircle className='h-4 w-4' />
-                      <AlertTitle>Success</AlertTitle>
+                      <AlertTitle>Accepted Profiles</AlertTitle>
                       <AlertDescription>
                         Your file has been successfully uploaded and processed.
+                        ({responseData?.createdProfilesCount}) Profiles were
+                        accepted.
                       </AlertDescription>
                     </Alert>
                   )}
@@ -329,6 +138,27 @@ export default function BulkUploadPage() {
                       <AlertDescription>
                         There was an error processing your file. Please check
                         the format and try again.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  {responseData && responseData?.rejectedProfilesCount > 0 && (
+                    <Alert variant='destructive' className='mt-4'>
+                      <AlertCircle className='h-4 w-4' />
+                      <AlertTitle>Rejected Profile</AlertTitle>
+                      <AlertDescription>
+                        ({responseData?.rejectedProfilesCount})
+                        {responseData?.rejectedProfilesCount > 1
+                          ? ' Profiles '
+                          : ' Profile '}
+                        were rejected. These are the rejected profiles.
+                        {responseData?.rejectedProfiles?.map(
+                          (profile, index) => (
+                            <div key={index} className='my-2 border-t py-1'>
+                              <p>Record # {profile.invalidRecordNumber}</p>
+                              <p>{profile.errors}</p>
+                            </div>
+                          )
+                        )}
                       </AlertDescription>
                     </Alert>
                   )}
@@ -364,7 +194,10 @@ export default function BulkUploadPage() {
                       messages.
                     </li>
                   </ol>
-                  <Button className='mt-4 bg-[#F2994A] hover:bg-[#D9823B] text-white'>
+                  <Button
+                    className='mt-4 bg-[#F2994A] hover:bg-[#D9823B] text-white'
+                    onClick={downloadFile}
+                  >
                     Download Template
                   </Button>
                 </CardContent>

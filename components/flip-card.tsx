@@ -15,7 +15,7 @@ interface FlipCardProps {
 }
 
 const statusConfig = {
-  active: { color: 'bg-green-100 text-green-800', label: 'Active' },
+  complete: { color: 'bg-green-100 text-green-800', label: 'Complete' },
   inProgress: { color: 'bg-blue-100 text-blue-800', label: 'In Progress' },
   onHold: { color: 'bg-yellow-100 text-yellow-800', label: 'On Hold' },
   inActive: { color: 'bg-gray-100 text-gray-800', label: 'Inactive' },
@@ -53,9 +53,9 @@ export function FlipCard({ talent, onDelete }: FlipCardProps) {
                   {talent.firstName + ' ' + talent.lastName}
                 </h3>
                 <Badge
-                  className={statusConfig[talent.status || 'active'].color}
+                  className={statusConfig[talent.status || 'complete'].color}
                 >
-                  {statusConfig[talent.status || 'active'].label}
+                  {statusConfig[talent.status || 'complete'].label}
                 </Badge>
               </div>
               <p className='text-xs sm:text-sm text-muted-foreground mb-2'>

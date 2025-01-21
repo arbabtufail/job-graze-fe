@@ -30,13 +30,14 @@ export default function EditTalentPage() {
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
   const [talent, setTalent] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [errorStatus, setErrorStatus] = useState<string>('');
 
   useEffect(() => {
     const fetchTalent = async () => {
       try {
         const response = await getTalentProfileById(params.id as string);
         if (response) {
-          setTalent(response.data);
+          setTalent(response.data.data);
         }
       } catch (error) {}
     };
@@ -75,6 +76,7 @@ export default function EditTalentPage() {
   ];
 
   const handleSectionClick = (sectionId: string) => {
+    setErrorStatus('');
     if (selectedSection === sectionId) {
       setSelectedSection(null);
       return;
@@ -94,13 +96,16 @@ export default function EditTalentPage() {
       const response = await getFunction[
         selectedSection as keyof typeof getFunction
       ](params.id as string, data);
-      if (response) {
-        setTalent(response.data);
+      if (response.data.code == 200) {
+        setTalent(response.data.data);
+        setErrorStatus('');
+        setSelectedSection(null);
+      } else {
+        setErrorStatus(response.data.message);
       }
     } catch (error) {
     } finally {
       setLoading(false);
-      setSelectedSection(null);
     }
   };
 
@@ -162,6 +167,7 @@ export default function EditTalentPage() {
                             handleUpdate(updatedData);
                           }}
                           loading={loading}
+                          errorStatus={errorStatus}
                           closeForm={() => setSelectedSection(null)}
                         />
                       </div>

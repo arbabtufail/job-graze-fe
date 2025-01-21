@@ -37,25 +37,31 @@ export const updatePersonalInformation = (
 
   for (const key in data) {
     const value = data[key as keyof typeof data];
-    if (value) {
-      formData.append(key, value as string | Blob);
-    }
+    formData.append(key, value as string | Blob);
   }
 
-  return axios.patch(`/talent-profiles/${talentId}/personalInformation`, data, {
+  return axios.patch(
+    `/talent-profiles/${talentId}/personalInformation`,
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
+  );
+};
+
+export const bulkCreateTalentProfiles = (
+  data: File
+): Promise<AxiosResponse<any>> => {
+  const formData = new FormData();
+  formData.append('bulkFile', data);
+
+  return axios.post(`/talent-profiles/bulkUpload`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
   });
-};
-
-export const createTalentProfile = (data: {
-  candidate: PersonalInfo<string>;
-  educationAndExperience: EducationAndExperience;
-  profileDetails: ProfileDetail;
-  professionalLicense: ProfessionalLicense;
-}): Promise<AxiosResponse<any>> => {
-  return axios.post(`/talent-profiles`, data);
 };
 
 export const getAllTalentProfiles = (): Promise<AxiosResponse<any>> => {
@@ -80,6 +86,10 @@ export const getMonthlyTalentAcquisitionCount = (): Promise<
   AxiosResponse<any>
 > => {
   return axios.get(`/talent-profiles/monthlyTalentAcquisitionCount`);
+};
+
+export const getTalentSpecializations = (): Promise<AxiosResponse<any>> => {
+  return axios.get(`/talent-profiles/talentSpecializations`);
 };
 
 export const getRecentActivity = (
