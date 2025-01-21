@@ -101,8 +101,7 @@ export default function TalentProfilesPage() {
 
     if (filters.status) {
       filteredTalents = filteredTalents.filter(
-        (talent) =>
-          talent.status && talent.status.toLowerCase() === filters.status
+        (talent) => talent.status && talent.status === filters.status
       );
     }
 

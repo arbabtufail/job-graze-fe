@@ -60,10 +60,10 @@ export function TalentFilters({
                   <SelectValue placeholder='Select status' />
                 </SelectTrigger>
                 <SelectContent className='bg-white'>
-                  <SelectItem value='active'>Active</SelectItem>
+                  <SelectItem value='complete'>Complete</SelectItem>
                   <SelectItem value='inProgress'>In Progress</SelectItem>
-                  <SelectItem value='onHold'>On Hold</SelectItem>
-                  <SelectItem value='inActive'>Inactive</SelectItem>
+                  {/* <SelectItem value='onHold'>On Hold</SelectItem>
+                  <SelectItem value='inActive'>Inactive</SelectItem> */}
                 </SelectContent>
               </Select>
             </div>
