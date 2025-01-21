@@ -1,6 +1,6 @@
-import { Bell, Search, User } from 'lucide-react'
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import { Bell, Search, User } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,12 +8,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu';
 
 export function DashboardHeader() {
   return (
-    <header className="flex flex-col md:flex-row items-center justify-between p-4 bg-white shadow-sm">
-      <div className="flex items-center w-full max-w-sm mb-4 md:mb-0">
+    <header className='flex flex-col md:flex-row items-center justify-between p-4 bg-transparent'>
+      {/* <div className="flex items-center w-full max-w-sm mb-4 md:mb-0">
         <Input
           type="search"
           placeholder="Search..."
@@ -44,8 +44,7 @@ export function DashboardHeader() {
             <DropdownMenuItem>Logout</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
+      </div> */}
     </header>
-  )
+  );
 }
-
