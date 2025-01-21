@@ -88,7 +88,7 @@ export function LicensesForm({
                   .split('T')[0] || '',
               licenseExpirationDate:
                 item.licenseExpirationDate === 'N/A'
-                  ? ''
+                  ? 'N/A'
                   : new Date(item.licenseExpirationDate)
                       .toISOString()
                       .split('T')[0] || '',
