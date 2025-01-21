@@ -23,6 +23,7 @@ import {
   CheckSquare,
   FileCheck,
   AlertCircle,
+  Check,
 } from 'lucide-react';
 import { FormHeader } from '@/components/form-header';
 import { ProfessionalLicense } from '@/shared/types/professionalLicense';
@@ -42,6 +43,7 @@ const licensesSchema = z.object({
       licenseExpirationDate: z
         .string()
         .min(1, 'License expiration date is required'),
+      isPermanent: z.boolean().optional(),
     })
   ),
   nclexRn: z.string().min(1, 'NCLEX-RN status is required'),
@@ -70,6 +72,8 @@ export function LicensesForm({
   const {
     control,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<LicensesFormData>({
     resolver: zodResolver(licensesSchema),
@@ -83,9 +87,12 @@ export function LicensesForm({
                   .toISOString()
                   .split('T')[0] || '',
               licenseExpirationDate:
-                new Date(item.licenseExpirationDate)
-                  .toISOString()
-                  .split('T')[0] || '',
+                item.licenseExpirationDate === 'N/A'
+                  ? ''
+                  : new Date(item.licenseExpirationDate)
+                      .toISOString()
+                      .split('T')[0] || '',
+              isPermanent: item.licenseExpirationDate === 'N/A',
             }))
           : [
               {
@@ -96,6 +103,7 @@ export function LicensesForm({
                 licenseIssuedBy: '',
                 licenseEffectiveDate: '',
                 licenseExpirationDate: '',
+                isPermanent: false,
               },
             ],
       nclexRn: data.nclexRn || '',
@@ -111,7 +119,18 @@ export function LicensesForm({
   });
 
   const onSubmit = (formData: LicensesFormData) => {
-    onUpdate(formData);
+    onUpdate({
+      ...formData,
+      licenses: formData.licenses.map((license) => {
+        const { isPermanent, ...rest } = license;
+        return {
+          ...rest,
+          licenseExpirationDate: isPermanent
+            ? 'N/A'
+            : new Date(license.licenseExpirationDate).toISOString(),
+        };
+      }),
+    });
   };
 
   return (
@@ -268,11 +287,53 @@ export function LicensesForm({
                     <div className='relative'>
                       <Calendar className='absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-600' />
                       <Input
-                        type='date'
+                        type={
+                          watch(`licenses.${index}.isPermanent`)
+                            ? 'text'
+                            : 'date'
+                        }
                         id='licenseExpirationDate'
                         className='pl-10'
                         {...field}
+                        disabled={watch(`licenses.${index}.isPermanent`)}
                       />
+                    </div>
+                  )}
+                />
+                <Controller
+                  name={`licenses.${index}.isPermanent`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className='flex items-center justify-start'>
+                      <Input
+                        id='isPermanent'
+                        type='checkbox'
+                        className='h-4 w-4 mr-2 cursor-pointer'
+                        {...field}
+                        checked={field.value}
+                        value={field.value ? 'true' : 'false'}
+                        onChange={(e) => {
+                          const isChecked = e.target.checked;
+                          field.onChange(isChecked);
+                          if (isChecked) {
+                            setValue(
+                              `licenses.${index}.licenseExpirationDate`,
+                              'N/A'
+                            );
+                          } else {
+                            setValue(
+                              `licenses.${index}.licenseExpirationDate`,
+                              ''
+                            );
+                          }
+                        }}
+                      />
+                      <Label
+                        className='text-sm font-normal cursor-pointer'
+                        htmlFor='isPermanent'
+                      >
+                        Not Available
+                      </Label>
                     </div>
                   )}
                 />
@@ -307,6 +368,7 @@ export function LicensesForm({
                 licenseEffectiveDate: '',
                 licenseExpirationDate: '',
                 licenseIssuedBy: '',
+                isPermanent: false,
               })
             }
           >
