@@ -96,7 +96,7 @@ export function PersonalInfoForm({
       address: data?.address1 || '',
       eligibility:
         data?.eligibility == 'false' || !data?.eligibility ? false : true,
-      photo: data.photo || null,
+      photo: data?.photo || '',
     },
   });
 

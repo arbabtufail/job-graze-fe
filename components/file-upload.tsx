@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 
 interface FileUploadProps {
   photo: string;
-  onFileSelect: (file: File) => void;
+  onFileSelect: (file: File | string) => void;
   accept: string;
   maxSize: number;
 }
@@ -24,7 +24,6 @@ export function FileUpload({
         const selectedFile = acceptedFiles[0];
         setFile(selectedFile);
         onFileSelect(selectedFile);
-        console.log('Selected file: ', selectedFile);
       }
     },
     [onFileSelect]
@@ -37,8 +36,10 @@ export function FileUpload({
     multiple: false,
   });
 
-  const removeFile = () => {
+  const removeFile = (event: React.MouseEvent) => {
+    event.stopPropagation();
     setFile(null);
+    onFileSelect('');
   };
 
   return (
