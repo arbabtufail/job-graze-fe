@@ -106,8 +106,10 @@ export default function TalentProfilesPage() {
     }
 
     if (filters.dateRange.from && filters.dateRange.to) {
+      filters.dateRange.to.setHours(23, 59, 59, 999);
       filteredTalents = filteredTalents.filter((talent) => {
         const createdDate = new Date(talent.createdAt);
+
         return (
           createdDate >= filters.dateRange.from &&
           createdDate <= filters.dateRange.to
