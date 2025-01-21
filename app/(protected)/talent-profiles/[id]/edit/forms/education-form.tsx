@@ -45,10 +45,12 @@ const educationSchema = z.object({
           .optional(),
         startDate: z.string().min(1, 'Start date is required'),
         endDate: z.string().min(1, 'End date is required'),
+        isPermanent: z.boolean().optional(),
       })
       .refine(
         (data) =>
-          !data.endDate || new Date(data.startDate) <= new Date(data.endDate),
+          data.isPermanent ||
+          new Date(data.startDate) <= new Date(data.endDate),
         {
           message: 'Start date cannot be later than the end date',
           path: ['startDate'], // Attach error to the `endDate` field
@@ -85,6 +87,8 @@ export function EducationForm({
   const {
     control,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<EducationFormData>({
     resolver: zodResolver(educationSchema),
@@ -106,12 +110,11 @@ export function EducationForm({
         data?.jobExperiences?.length > 0
           ? data.jobExperiences.map((jobExperience) => ({
               ...jobExperience,
-              startDate: new Date(jobExperience.startDate)
-                .toISOString()
-                .split('T')[0],
-              endDate: new Date(jobExperience.endDate)
-                .toISOString()
-                .split('T')[0],
+              startDate:
+                new Date(jobExperience.startDate).toISOString().split('T')[0] ||
+                '',
+              endDate: jobExperience.endDate,
+              isPermanent: jobExperience.endDate === 'N/A',
             }))
           : [
               {
@@ -119,6 +122,7 @@ export function EducationForm({
                 rolesAndResponsibilities: '',
                 startDate: '',
                 endDate: '',
+                isPermanent: false,
               },
             ],
       languages: data.languages.join(',') || '',
@@ -145,13 +149,16 @@ export function EducationForm({
         ...education,
         year: Number(education.year),
       })),
-      jobExperiences: formData.jobExperiences.map((jobExperience) => ({
-        ...jobExperience,
-        startDate: new Date(jobExperience.startDate).toISOString(),
-        endDate:
-          jobExperience.endDate &&
-          new Date(jobExperience.endDate).toISOString(),
-      })),
+      jobExperiences: formData.jobExperiences.map((jobExperience) => {
+        const { isPermanent, ...rest } = jobExperience;
+        return {
+          ...rest,
+          startDate: new Date(rest.startDate).toISOString(),
+          endDate: isPermanent
+            ? 'N/A'
+            : new Date(rest.endDate).toISOString().split('T')[0],
+        };
+      }),
       languages: formData.languages.split(','),
     });
   };
@@ -352,7 +359,47 @@ export function EducationForm({
                   name={`jobExperiences.${index}.endDate`}
                   control={control}
                   render={({ field }) => (
-                    <Input type='date' id={`endDate-${index}`} {...field} />
+                    <Input
+                      type={
+                        watch(`jobExperiences.${index}.isPermanent`)
+                          ? 'text'
+                          : 'date'
+                      }
+                      id={`endDate-${index}`}
+                      {...field}
+                      disabled={watch(`jobExperiences.${index}.isPermanent`)}
+                    />
+                  )}
+                />
+                <Controller
+                  name={`jobExperiences.${index}.isPermanent`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className='flex items-center justify-start'>
+                      <Input
+                        id='isPermanent'
+                        type='checkbox'
+                        className='h-4 w-4 mr-2 cursor-pointer'
+                        {...field}
+                        checked={field.value}
+                        value={field.value ? 'true' : 'false'}
+                        onChange={(e) => {
+                          const isChecked = e.target.checked;
+                          field.onChange(isChecked);
+                          if (isChecked) {
+                            setValue(`jobExperiences.${index}.endDate`, 'N/A');
+                          } else {
+                            setValue(`jobExperiences.${index}.endDate`, '');
+                          }
+                        }}
+                      />
+                      <Label
+                        className='text-sm font-normal cursor-pointer'
+                        htmlFor='isPermanent'
+                      >
+                        Not Available
+                      </Label>
+                    </div>
                   )}
                 />
                 {errors.jobExperiences?.[index]?.endDate && (
@@ -383,6 +430,7 @@ export function EducationForm({
                 rolesAndResponsibilities: '',
                 startDate: '',
                 endDate: '',
+                isPermanent: false,
               })
             }
           >
