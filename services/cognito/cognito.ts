@@ -43,7 +43,7 @@ export const validateTokenExpiry = async (token: string): Promise<boolean> => {
 
     return true;
   } catch (error: any) {
-    return false
+    return false;
   }
 };
 

@@ -54,7 +54,6 @@ export default function DashboardPage() {
     { name: string; value: number }[]
   >([]);
 
-
   const [profileCount, setProfileCount] = useState<{
     totalProfilesCount: number;
     completedProfilesCount: number;
@@ -132,11 +131,11 @@ export default function DashboardPage() {
             </form>
           </div>
 
-          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8'>
-            {isLoading ? (
-              <p>Loading...</p>
-            ) : (
-              <>
+          {isLoading ? (
+            <p className='mb-8'>Loading...</p>
+          ) : (
+            <>
+              <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8'>
                 <Card>
                   <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
                     <CardTitle className='text-sm font-medium'>
@@ -176,19 +175,12 @@ export default function DashboardPage() {
                     </div>
                   </CardContent>
                 </Card>
-              </>
-            )}
-          </div>
-
-          {isLoading ? (
-            <p>Loading charts...</p>
-          ) : (
-            <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8 mb-8'>
-              <TalentAcquisitionChart data={monthlyAcquisition || []} />
-              <TalentSpecializationChart
-                data={talentSpecialization || []}
-              />
-            </div>
+              </div>
+              <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8 mb-8'>
+                <TalentAcquisitionChart data={monthlyAcquisition || []} />
+                <TalentSpecializationChart data={talentSpecialization || []} />
+              </div>
+            </>
           )}
 
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8'>

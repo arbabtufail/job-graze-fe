@@ -19,9 +19,18 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import { toast } from '@/components/ui/use-toast';
-import { AlertCircle, Check, User, Lock, Eye, EyeOff } from 'lucide-react';
+import {
+  AlertCircle,
+  Check,
+  User,
+  Lock,
+  Eye,
+  EyeOff,
+  CheckCircle,
+} from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const personalInfoSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -61,6 +70,10 @@ export default function AccountSettingsPage() {
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [error, setError] = useState('');
+  const [updateStatus, setUpdateStatus] = useState<
+    'idle' | 'success' | 'error'
+  >('idle');
 
   const personalInfoForm = useForm<PersonalInfoFormData>({
     resolver: zodResolver(personalInfoSchema),
@@ -93,12 +106,19 @@ export default function AccountSettingsPage() {
         body: JSON.stringify(data),
       });
       if (!response.ok) {
-        localStorage.removeItem('token');
-        router.push('/login');
+        const json = await response.json();
+        setUpdateStatus('error');
+        setError(json.message);
+        if (json.message == 'Access Token has expired') {
+          localStorage.removeItem('token');
+          router.push('/login');
+        }
+        return;
       }
 
       const json = await response.json();
       if (json) {
+        setUpdateStatus('success');
         toast({
           title: 'Personal Info Updated',
           description:
@@ -129,15 +149,26 @@ export default function AccountSettingsPage() {
         }),
       });
       if (!response.ok) {
-        throw new Error('An error occurred.');
+        const json = await response.json();
+        setUpdateStatus('error');
+        setError(json.message);
+        if (json.message == 'Access Token has expired') {
+          localStorage.removeItem('token');
+          router.push('/login');
+        }
+        return;
       }
 
       const json = await response.json();
-      toast({
-        title: 'Password Reset',
-        description: 'Your password has been successfully reset.',
-        duration: 3000,
-      });
+      if (json) {
+        securityForm.reset();
+        setUpdateStatus('success');
+        toast({
+          title: 'Password Reset',
+          description: 'Your password has been successfully reset.',
+          duration: 3000,
+        });
+      }
     } catch (error) {
       toast({
         title: 'Error',
@@ -168,8 +199,11 @@ export default function AccountSettingsPage() {
         },
       });
       if (!response.ok) {
-        localStorage.removeItem('token');
-        router.push('/login');
+        const json = await response.json();
+        if (json.message == 'Access Token has expired') {
+          localStorage.removeItem('token');
+          router.push('/login');
+        }
       }
 
       const json = await response.json();
@@ -225,7 +259,10 @@ export default function AccountSettingsPage() {
             {!loading ? (
               <Tabs
                 value={activeTab}
-                onValueChange={setActiveTab}
+                onValueChange={(value) => {
+                  setActiveTab(value);
+                  setUpdateStatus('idle');
+                }}
                 className='w-full'
               >
                 <TabsList className='grid w-full grid-cols-2 mb-8'>
@@ -277,6 +314,7 @@ export default function AccountSettingsPage() {
                                   id='firstName'
                                   placeholder='John'
                                   {...field}
+                                  onFocus={() => setUpdateStatus('idle')}
                                 />
                               )}
                             />
@@ -299,6 +337,7 @@ export default function AccountSettingsPage() {
                                   id='lastName'
                                   placeholder='Doe'
                                   {...field}
+                                  onFocus={() => setUpdateStatus('idle')}
                                 />
                               )}
                             />
@@ -323,6 +362,7 @@ export default function AccountSettingsPage() {
                                 type='email'
                                 placeholder='john.doe@example.com'
                                 {...field}
+                                onFocus={() => setUpdateStatus('idle')}
                               />
                             )}
                           />
@@ -343,6 +383,7 @@ export default function AccountSettingsPage() {
                                 type='tel'
                                 placeholder='+1 (555) 000-0000'
                                 {...field}
+                                onFocus={() => setUpdateStatus('idle')}
                               />
                             )}
                           />
@@ -358,9 +399,28 @@ export default function AccountSettingsPage() {
                                 placeholder='Tell us about yourself'
                                 className='w-full h-32 px-3 py-2 text-sm rounded-md border border-input bg-background'
                                 {...field}
+                                onFocus={() => setUpdateStatus('idle')}
                               />
                             )}
                           />
+                        </div>
+                        <div className='space-y-2'>
+                          {updateStatus === 'error' && error && (
+                            <Alert variant='destructive' className='mt-4'>
+                              <AlertCircle className='h-4 w-4' />
+                              <AlertTitle>Error</AlertTitle>
+                              <AlertDescription>{error}</AlertDescription>
+                            </Alert>
+                          )}
+                          {updateStatus === 'success' && (
+                            <Alert className='mt-4'>
+                              <CheckCircle className='h-4 w-4' />
+                              <AlertTitle>Success</AlertTitle>
+                              <AlertDescription>
+                                Your profile has been successfully updated.
+                              </AlertDescription>
+                            </Alert>
+                          )}
                         </div>
                       </CardContent>
                       <CardFooter>
@@ -410,6 +470,7 @@ export default function AccountSettingsPage() {
                                   id='newPassword'
                                   type={showPassword ? 'text' : 'password'}
                                   {...field}
+                                  onFocus={() => setUpdateStatus('idle')}
                                 />
                               )}
                             />
@@ -458,6 +519,7 @@ export default function AccountSettingsPage() {
                                 id='confirmPassword'
                                 type={showPassword ? 'text' : 'password'}
                                 {...field}
+                                onFocus={() => setUpdateStatus('idle')}
                               />
                             )}
                           />
@@ -468,6 +530,24 @@ export default function AccountSettingsPage() {
                                   .message
                               }
                             </p>
+                          )}
+                        </div>
+                        <div className='space-y-2'>
+                          {updateStatus === 'error' && error && (
+                            <Alert variant='destructive' className='mt-4'>
+                              <AlertCircle className='h-4 w-4' />
+                              <AlertTitle>Error</AlertTitle>
+                              <AlertDescription>{error}</AlertDescription>
+                            </Alert>
+                          )}
+                          {updateStatus === 'success' && (
+                            <Alert className='mt-4'>
+                              <CheckCircle className='h-4 w-4' />
+                              <AlertTitle>Success</AlertTitle>
+                              <AlertDescription>
+                                Your password has been successfully updated.
+                              </AlertDescription>
+                            </Alert>
                           )}
                         </div>
                       </CardContent>
